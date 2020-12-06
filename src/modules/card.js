@@ -1,6 +1,6 @@
 //建立新牌組
 function buildNewDeck() {
-    const suit = ['Spades', 'heart', 'diamond', 'club'];
+    const suit = ['spades', 'heart', 'diamond', 'club'];
     const number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
     const deck = []
     for (i = 0; i < suit.length; i++) {
@@ -32,7 +32,7 @@ function dealCards(playerAmount, deck) {
         players.push(eachPlayer)
     }
     for (let i = 0; i < deck.length; i++) {
-        playerIndex = i%playerAmount
+        playerIndex = i % playerAmount
         players[playerIndex].push(deck[i]);
     }
     const sorted = players.map(cards => sortCards(cards))
@@ -48,4 +48,26 @@ function sortCards(cards) {
     })
     return sorted
 }
-console.log(dealCards(4, shuffle(buildNewDeck())))
+
+//比大小
+function countPoint(trump, nowSuit, card) {
+    let point = 0;
+    if (card.suit === trump) {
+        point += 20;
+    }
+    if (card.suit !== nowSuit) {
+        point -= 20;
+    }
+    point += card.number;
+    return point;
+}
+
+function highCard(trump, nowSuit,cards) {
+    const point = cards.map(card => {
+        const point = countPoint(trump,nowSuit, card)
+        return point
+    })
+    const winnerIndex = point.indexOf(Math.max(...point))
+    return cards[winnerIndex]
+}
+
