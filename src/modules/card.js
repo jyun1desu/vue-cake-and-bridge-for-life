@@ -31,11 +31,9 @@ function dealCards(playerAmount, deck) {
         const eachPlayer = [];
         players.push(eachPlayer)
     }
-    for (let i = 0; i < deck.length; i = i + 4) {
-        players[0].push(deck[i]);
-        players[1].push(deck[i + 1]);
-        players[2].push(deck[i + 2]);
-        players[3].push(deck[i + 3]);
+    for (let i = 0; i < deck.length; i++) {
+        playerIndex = i%playerAmount
+        players[playerIndex].push(deck[i]);
     }
     const sorted = players.map(cards => sortCards(cards))
     return sorted
