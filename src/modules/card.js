@@ -25,16 +25,29 @@ function shuffle(deck) {
     return deck
 }
 //發牌(給四個玩家)
-function dealCards(playerAmount,deck) {
+function dealCards(playerAmount, deck) {
     const players = [];
     for (let i = 0; i < playerAmount; i++) {
         const eachPlayer = [];
         players.push(eachPlayer)
-        for (let i = 0;i<deck.length;i=i+4){
-            eachPlayer.push(deck[i])
-        }
     }
-    return players
+    for (let i = 0; i < deck.length; i = i + 4) {
+        players[0].push(deck[i]);
+        players[1].push(deck[i + 1]);
+        players[2].push(deck[i + 2]);
+        players[3].push(deck[i + 3]);
+    }
+    const sorted = players.map(cards => sortCards(cards))
+    return sorted
 }
-//
-console.log(dealCards(4,shuffle(buildNewDeck())))
+//排序牌
+function sortCards(cards) {
+    const sorted = cards.sort((cardA, cardB) => {
+        const order = ['Spades', 'heart', 'club', 'diamond'];
+        cardA = 100 * (4 - order.indexOf(cardA.suit)) + 13 - cardA.number
+        cardB = 100 * (4 - order.indexOf(cardB.suit)) + 13 - cardB.number
+        return cardB - cardA
+    })
+    return sorted
+}
+console.log(dealCards(4, shuffle(buildNewDeck())))
