@@ -2,27 +2,52 @@
   <div class="game_room">
     <div class="game">
       <div class="players_with_card">
-        <div class="player player__user"></div>
-        <div class="player player__left"></div>
-        <div class="player player__corss"></div>
-        <div class="player player__right"></div>
+        <div class="player player__cross">
+          <div
+            class="card"
+            v-for="card in deck[0]"
+            :key="card.suit + card.number"
+          ></div>
+        </div>
+        <div class="player player__left">
+          <div
+            class="card"
+            v-for="card in deck[1]"
+            :key="card.suit + card.number"
+          ></div>
+        </div>
+        <div class="player player__right">
+          <div
+            class="card"
+            v-for="card in deck[3]"
+            :key="card.suit + card.number"
+          ></div>
+        </div>
+        <div class="player player__user">
+          <UserCard
+            class="card"
+            v-for="card in deck[3]"
+            :key="card.suit + card.number"
+            :card="card"
+          ></UserCard>
+        </div>
       </div>
       <div class="card_table">
         <div class="players_info">
           <div class="top">
-            <span class="team team1">莓</span>
+            <span class="team team1"></span>
             <span class="name">jyun1</span>
           </div>
           <div class="left">
-            <span class="team team2">露</span>
+            <span class="team team2"></span>
             <span class="name">熊熊</span>
           </div>
           <div class="right">
-            <span class="team team2">露</span>
+            <span class="team team2"></span>
             <span class="name">阿胡</span>
           </div>
           <div class="bottom">
-            <span class="team team1">莓</span>
+            <span class="team team1"></span>
             <span class="name">自己</span>
           </div>
         </div>
@@ -30,25 +55,25 @@
       <div class="game__info">
         <div class="trump">
           <span>王<br />牌</span>
-          <span 
-          :class="{red_suit:true,black_suit:false}"
-          class="suit">&#10084;</span>
+          <span :class="{ red_suit: true, black_suit: false }" class="suit"
+            >&hearts;</span
+          >
         </div>
         <div class="tricks">
           <span>戰<br />況</span>
           <span>
             <div class="team team1">
-              <span class="team__name">莓</span>
+              <span class="team__name"></span>
               <span class="team__tricks">
                 <span class="now_win">0</span>
-                <span class="should_win">/8墩</span>
+                <span class="should_win">/8</span>
               </span>
             </div>
             <div class="team team2">
-              <span class="team__name">露</span>
+              <span class="team__name"></span>
               <span class="team__tricks">
                 <span class="now_win">0</span>
-                <span class="should_win">/6墩</span>
+                <span class="should_win">/6</span>
               </span>
             </div>
           </span>
@@ -60,8 +85,78 @@
 </template>
 
 <script>
+import UserCard from "../components/UserCard.vue";
 export default {
   name: "GameRoom",
+  components: {
+    UserCard,
+  },
+  data() {
+    return {
+      deck: [
+        [
+          { suit: "spades", number: 1 },
+          { suit: "spades", number: 3 },
+          { suit: "spades", number: 5 },
+          { suit: "spades", number: 6 },
+          { suit: "spades", number: 9 },
+          { suit: "club", number: 5 },
+          { suit: "club", number: 8 },
+          { suit: "club", number: 9 },
+          { suit: "club", number: 13 },
+          { suit: "diamond", number: 5 },
+          { suit: "diamond", number: 6 },
+          { suit: "diamond", number: 12 },
+          { suit: "diamond", number: 13 },
+        ],
+        [
+          { suit: "heart", number: 3 },
+          { suit: "heart", number: 4 },
+          { suit: "heart", number: 5 },
+          { suit: "heart", number: 7 },
+          { suit: "heart", number: 10 },
+          { suit: "heart", number: 12 },
+          { suit: "club", number: 2 },
+          { suit: "club", number: 7 },
+          { suit: "club", number: 10 },
+          { suit: "diamond", number: 1 },
+          { suit: "diamond", number: 7 },
+          { suit: "diamond", number: 9 },
+          { suit: "diamond", number: 10 },
+        ],
+        [
+          { suit: "spades", number: 2 },
+          { suit: "spades", number: 4 },
+          { suit: "spades", number: 10 },
+          { suit: "spades", number: 11 },
+          { suit: "heart", number: 1 },
+          { suit: "heart", number: 6 },
+          { suit: "heart", number: 8 },
+          { suit: "heart", number: 11 },
+          { suit: "club", number: 3 },
+          { suit: "club", number: 4 },
+          { suit: "club", number: 12 },
+          { suit: "diamond", number: 3 },
+          { suit: "diamond", number: 8 },
+        ],
+        [
+          { suit: "spades", number: 7 },
+          { suit: "spades", number: 8 },
+          { suit: "spades", number: 12 },
+          { suit: "spades", number: 13 },
+          { suit: "heart", number: 2 },
+          { suit: "heart", number: 9 },
+          { suit: "heart", number: 13 },
+          { suit: "club", number: 1 },
+          { suit: "club", number: 6 },
+          { suit: "club", number: 11 },
+          { suit: "diamond", number: 2 },
+          { suit: "diamond", number: 4 },
+          { suit: "diamond", number: 11 },
+        ],
+      ],
+    };
+  },
 };
 </script>
 
@@ -75,7 +170,7 @@ export default {
 
 .game {
   position: relative;
-  flex: 1 1 80%;
+  flex: 1 1 93%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -88,10 +183,15 @@ export default {
     justify-content: space-between;
     & > div {
       display: flex;
+      flex: 0 0 auto;
+      &.trump {
+        flex: 1 1 auto;
+        margin-right: 15px;
+      }
       background-color: #fff;
       border-radius: 5px;
       overflow: hidden;
-      line-height: 25px;
+      line-height: 18px;
       & > span {
         padding: 5px 10px;
         display: flex;
@@ -107,14 +207,16 @@ export default {
         }
       }
 
-      .suit{
+      .suit {
         font-size: 20px;
         padding: 0 5px;
-        &.red_suit{
-          color:$red_suit_color;
+        width: 100%;
+        text-align: center;
+        &.red_suit {
+          color: $red_suit_color;
         }
-                &.black_suit{
-          color:$black_suit_color;
+        &.black_suit {
+          color: $black_suit_color;
         }
       }
 
@@ -141,20 +243,22 @@ export default {
         }
 
         &__name {
-          color: #fff;
-          padding: 5px;
+          display: inline-block;
+          width: 10px;
+          height: 10px;
           margin-right: 10px;
           border-radius: 100%;
         }
 
-        &__tricks{
+        &__tricks {
           letter-spacing: 1px;
-          .now_win{
-            font-size: 16px;
+          .now_win {
+            font-size: 14px;
             margin-right: 3px;
           }
-          .should_win{
-            color:#7E7E7E;
+          .should_win {
+            font-size: 12px;
+            color: #7e7e7e;
           }
         }
       }
@@ -174,7 +278,7 @@ export default {
     height: 100%;
     & > div {
       position: absolute;
-      font-size: 18px;
+      font-size: 14px;
       color: $title_font_color;
       &.top {
         top: 0;
@@ -222,9 +326,68 @@ export default {
   }
 }
 
+.players_with_card {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+
+  .player {
+    display: flex;
+
+    &__user {
+      margin-top: auto;
+      margin-bottom: 10px;
+      .card {
+        background-color: #FAF7F7;
+      }
+    }
+    &__left {
+      position: absolute;
+      transform-origin: left top;
+      transform: rotate(90deg) translate(-50%, -50%);
+      top: 50%;
+      left: 0;
+    }
+    &__right {
+      position: absolute;
+      transform-origin: right top;
+      transform: rotate(-90deg) translate(50%, -50%);
+      top: 50%;
+      right: 0;
+    }
+    &__cross {
+      margin-top: -15px;
+    }
+    &__left,
+    &__cross,
+    &__right {
+      .card {
+        background-color: #E5E5E5;
+      }
+    }
+
+    .card {
+      border: 1px solid white;
+      box-sizing: border-box;
+      padding: 2px;
+      width: 17vw;
+      height: 24vw;
+      border-radius: 3px;
+      & + .card {
+        margin-left: -12vw;
+      }
+    }
+  }
+}
+
 .settings {
   width: 100%;
-  height: 10%;
+  height: 7%;
   background-color: #f9f9f9;
   margin-top: auto;
 }
