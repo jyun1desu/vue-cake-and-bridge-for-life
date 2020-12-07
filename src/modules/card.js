@@ -1,4 +1,4 @@
-//建立新牌組
+////建立新牌組
 function buildNewDeck() {
     const suit = ['spades', 'heart', 'diamond', 'club'];
     const number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
@@ -15,7 +15,7 @@ function buildNewDeck() {
     }
     return deck
 }
-//洗牌
+////洗牌
 function shuffle(deck) {
     let i = deck.length;
     while (i > 1) {
@@ -24,7 +24,7 @@ function shuffle(deck) {
     }
     return deck
 }
-//發牌(給四個玩家)
+////發牌(給四個玩家)
 function dealCards(playerAmount, deck) {
     const players = [];
     for (let i = 0; i < playerAmount; i++) {
@@ -70,4 +70,14 @@ function highCard(trump, nowSuit,cards) {
     const winnerIndex = point.indexOf(Math.max(...point))
     return cards[winnerIndex]
 }
+//出牌（從牌組裡刪除某張牌）
+function playCard(played,playerDeck){
+    const index = playerDeck.findIndex(card=>{
+        return card.suit === played.suit && card.number === played.number
+    });
 
+    playerDeck.splice(index,1)
+};
+
+const shuffledDeck = shuffle(buildNewDeck())
+console.log(dealCards(4,shuffledDeck))
