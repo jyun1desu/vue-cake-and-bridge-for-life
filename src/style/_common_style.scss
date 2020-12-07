@@ -1,0 +1,14 @@
+@mixin button_style {
+    cursor: pointer;
+    background-color: $button_color;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 20px;
+    color: #fff;
+    text-align: center;
+
+    &:active,
+    &:focus {
+        outline: none;
+    }
+}

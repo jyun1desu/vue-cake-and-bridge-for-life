@@ -3,9 +3,17 @@
 </template>
 
 <style lang="scss">
-body{
+*{
+  font-family: $main_font_family;
+}
+body,html {
   background-color: $theme_background;
-  width: 100%;
+  box-sizing: border-box;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+#app {
   height: 100%;
 }
 </style>

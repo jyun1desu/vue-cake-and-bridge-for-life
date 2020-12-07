@@ -7,6 +7,16 @@ const routes = [
     name: 'Home',
     component: Home
   },
+  {
+    path: '/waitingRoom',
+    name: 'WaitingRoom',
+    component: () => import(/* webpackChunkName: "about" */ '../views/WaitingRoom.vue'),
+  },
+  {
+    path: '/gameroom',
+    name: 'GameRoom',
+    component: () => import(/* webpackChunkName: "about" */ '../views/GameRoom.vue'),
+  },
 ]
 
 const router = createRouter({
