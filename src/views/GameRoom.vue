@@ -64,7 +64,7 @@
         <div class="trump">
           <span>王<br />牌</span>
           <span :class="{ red_suit: true, black_suit: false }" class="suit"
-            >&hearts;</span
+            ></span
           >
         </div>
         <div class="tricks">
@@ -74,14 +74,14 @@
               <span class="team__name"></span>
               <span class="team__tricks">
                 <span class="now_win">0</span>
-                <span class="should_win">/8</span>
+                <span class="should_win">/7</span>
               </span>
             </div>
             <div class="team team2">
               <span class="team__name"></span>
               <span class="team__tricks">
                 <span class="now_win">0</span>
-                <span class="should_win">/6</span>
+                <span class="should_win">/7</span>
               </span>
             </div>
           </span>

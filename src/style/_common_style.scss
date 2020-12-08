@@ -23,3 +23,25 @@
     justify-content: center;
     align-items: center;
 }
+
+@mixin radio_style($w,$ml) {
+    position: relative;
+    display: inline-block;
+    width: $w;
+    height: $w;
+    border-radius: 100%;
+    background-color: #fff;
+    margin-right: $ml;
+
+    &::after {
+        content: "";
+        display: block;
+        width: 70%;
+        height: 70%;
+        border-radius: 70%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+}

@@ -162,28 +162,8 @@ export default {
         }
 
         .radio {
-          position: relative;
-
-          &::after {
-            content: "";
-            display: block;
-            width: 70%;
-            height: 70%;
-            border-radius: 70%;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-          }
+          @include radio_style(15px,10px);
         }
-      }
-      .radio {
-        display: inline-block;
-        width: 15px;
-        height: 15px;
-        border-radius: 100%;
-        background-color: #fff;
-        margin-right: 10px;
       }
     }
   }
