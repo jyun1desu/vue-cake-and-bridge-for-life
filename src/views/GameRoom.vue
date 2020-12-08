@@ -25,8 +25,10 @@
         </div>
         <div class="player player__user">
           <UserCard
+            @pick-suit="pickACard"
+            :now-pick-suit="nowPickSuit"
             class="card"
-            v-for="card in deck[3]"
+            v-for="card in deck[1]"
             :key="card.suit + card.number"
             :card="card"
           ></UserCard>
@@ -155,7 +157,20 @@ export default {
           { suit: "diamond", number: 11 },
         ],
       ],
+      nowPickSuit: null,
     };
+  },
+  methods: {
+    pickACard(pickedCard) {
+      if (this.nowPickSuit === pickedCard.suit) {
+        //double check要出哪一張牌
+        //出牌
+        //出完牌reset NowPickSuit
+        this.nowPickSuit = null;
+      } else {
+        this.nowPickSuit = pickedCard.suit;
+      }
+    },
   },
 };
 </script>
@@ -343,7 +358,7 @@ export default {
       margin-top: auto;
       margin-bottom: 10px;
       .card {
-        background-color: #FAF7F7;
+        background-color: #fafaf7;
       }
     }
     &__left {
@@ -367,7 +382,7 @@ export default {
     &__cross,
     &__right {
       .card {
-        background-color: #E5E5E5;
+        background-color: #e5e5e5;
       }
     }
 

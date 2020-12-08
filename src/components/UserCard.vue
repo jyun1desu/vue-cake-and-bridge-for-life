@@ -1,5 +1,7 @@
 <template>
   <div 
+  @click="$emit('pick-suit',card)"
+  :class="{now_pick:nowPickSuit===card.suit}"
   class="user_card">
     <div class="card_info">
       <span
@@ -36,7 +38,11 @@
 <script>
 export default {
   name: "UserCard",
-  props: ["card"],
+  props: ["card",'now-pick-suit'],
+  data(){
+    return{
+    }
+  },
   computed: {
     numberInPoker() {
       const poker = [
@@ -84,8 +90,10 @@ export default {
   display: flex;
   justify-content: space-between;
   z-index: 1;
-  &:hover{
-    transform: translateY(-20%);
+  transition: .2s all;
+  &.now_pick{
+    transform: translateY(-20%) scale(1.1);
+    margin-left:-10vw !important;
   }
 
   .card_info {
