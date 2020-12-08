@@ -12,3 +12,14 @@
         outline: none;
     }
 }
+
+@mixin translucent_mask {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    background-color: $masking;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

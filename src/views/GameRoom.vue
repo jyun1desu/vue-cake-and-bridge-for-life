@@ -1,6 +1,12 @@
 <template>
   <div class="game_room">
     <div class="game">
+      <GiveUpThisDeckDialog
+        v-if="dealDone && !isOKtoGoOn && badLuck"
+        @continueGame="isOKtoGoOn = true"
+        @restartGame="isOKtoGoOn = false"
+      />
+      <BiddingDialog />
       <div class="players_with_card">
         <div class="player player__cross">
           <div
@@ -28,7 +34,7 @@
             @pick-suit="pickACard"
             :now-pick-suit="nowPickSuit"
             class="card"
-            v-for="card in deck[1]"
+            v-for="card in deck[3]"
             :key="card.suit + card.number"
             :card="card"
           ></UserCard>
@@ -87,11 +93,15 @@
 </template>
 
 <script>
-import UserCard from "../components/UserCard.vue";
+import UserCard from "../components/GameRoom/UserCard.vue";
+import GiveUpThisDeckDialog from "../components/GameRoom/giveUpThisDeckDialog.vue";
+import BiddingDialog from "../components/GameRoom/biddingDialog.vue";
 export default {
   name: "GameRoom",
   components: {
     UserCard,
+    GiveUpThisDeckDialog,
+    BiddingDialog,
   },
   data() {
     return {
@@ -144,20 +154,22 @@ export default {
         [
           { suit: "spades", number: 7 },
           { suit: "spades", number: 8 },
-          { suit: "spades", number: 12 },
-          { suit: "spades", number: 13 },
+          { suit: "spades", number: 9 },
+          { suit: "spades", number: 1 },
           { suit: "heart", number: 2 },
           { suit: "heart", number: 9 },
-          { suit: "heart", number: 13 },
+          { suit: "heart", number: 1 },
           { suit: "club", number: 1 },
           { suit: "club", number: 6 },
-          { suit: "club", number: 11 },
+          { suit: "club", number: 1 },
           { suit: "diamond", number: 2 },
           { suit: "diamond", number: 4 },
-          { suit: "diamond", number: 11 },
+          { suit: "diamond", number: 1 },
         ],
       ],
+      dealDone: true,
       nowPickSuit: null,
+      isOKtoGoOn: true,
     };
   },
   methods: {
@@ -170,6 +182,30 @@ export default {
       } else {
         this.nowPickSuit = pickedCard.suit;
       }
+    },
+    restartGame() {
+      console.log("重新牌局！");
+    },
+  },
+  computed: {
+    badLuck() {
+      const deck = this.deck[3];
+      if (deck.length === 13) {
+        const deckPoint = deck
+          .map((card) => card.number)
+          .reduce((a, b) => {
+            const point = b > 9 ? b - 9 : 0;
+            return a + point;
+          }, 0);
+        return deckPoint > 4 ? false : true;
+      } else {
+        return false;
+      }
+    },
+  },
+  watch: {
+    isOKtoGoOn(isOK) {
+      if (!isOK) this.restartGame();
     },
   },
 };
