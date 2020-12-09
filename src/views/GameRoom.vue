@@ -4,8 +4,9 @@
       @click="
         nowPickSuit = null;
         showWonTricks = false;
+        showSettings = false;
       "
-      :class="{ half_seen: showWonTricks }"
+      :class="{ half_seen: showWonTricks||showSettings }"
       class="game"
     >
       <GiveUpThisDeckDialog
@@ -114,24 +115,37 @@
       <p class="title">你贏的墩們</p>
     </div>
 
-    <div :class="{ show: showSettings }" class="settings"></div>
+    <div :class="{ show: showSettings }" class="settings">
+      <button 
+      @click="backToWaitingRoom"
+      class="change_mate">更換隊友</button>
+      <button 
+      @click="leaveGame"
+      class="exit">離開遊戲</button>
+    </div>
 
     <div
-    v-show="!showSettings"
+      v-show="hasTrump&&!showSettings"
       :class="{ show: showWonTricks }"
-      @click.stop="showWonTricks = !showWonTricks;showSettings=false"
+      @click.stop="
+        showWonTricks = !showWonTricks;
+        showSettings = false;
+      "
       class="toggle"
     >
-      <div 
-      class="icon">
+      <div class="icon">
         <span class="card"></span>
         <span class="card"></span>
       </div>
     </div>
 
     <div
+      v-show="!showWonTricks"
       :class="{ show: showSettings }"
-      @click.stop="showSettings = !showSettings;showWonTricks=false"
+      @click.stop="
+        showSettings = !showSettings;
+        showWonTricks = false;
+      "
       class="toggle_settings"
     >
       <div class="icon">
@@ -254,6 +268,17 @@ export default {
         return false;
       }
     },
+    backToWaitingRoom(){
+      //向所有人發送：有人要換隊友，3秒後導向等待室...
+      //將所有人導向等待室
+      console.log('換！')
+    },
+    leaveGame(){
+      //向所有人發送：有人離開了，3秒後導向等待室...
+      //將使用者導向home,其他人導向等待室
+      console.log('掰')
+
+    }
   },
   computed: {
     suitColor() {
@@ -583,19 +608,9 @@ export default {
 }
 
 .won_tricks {
-  position: absolute;
+  @include toggle_list_ui;
   width: 70vw;
   height: 50vh;
-  bottom: 20vw;
-  left: 100%;
-  z-index: 10;
-  background: #fff;
-  transition: all 0.5s;
-  border-top-left-radius: 10px;
-  border-bottom-left-radius: 10px;
-  box-sizing: border-box;
-  padding: 15px;
-  overflow: scroll;
   &.show {
     left: 30vw;
   }
@@ -673,10 +688,15 @@ export default {
 .settings {
   @include toggle_list_ui;
   width: 50vw;
-  height: 40vh;
-  bottom: 5vw;
+  height: 20vh;
   &.show {
     left: 50vw;
+  }
+
+  button{
+    @include button_style;
+    margin-bottom: 10px;
+    font-size: 14px;
   }
 }
 </style>

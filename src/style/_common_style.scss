@@ -104,9 +104,10 @@
     background-color: $color;
     display: flex;
     align-items: center;
+
 }
 
-@mixin toggle_list_ui{
+@mixin toggle_list_ui {
     position: absolute;
     left: 100%;
     z-index: 10;
@@ -117,4 +118,5 @@
     box-sizing: border-box;
     padding: 15px;
     overflow: scroll;
+    bottom: 5vw;
 }
