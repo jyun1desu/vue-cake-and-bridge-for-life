@@ -3,11 +3,12 @@
 </template>
 
 <style lang="scss">
-*{
+* {
   font-family: $main_font_family;
   user-select: none;
 }
-body,html {
+body,
+html {
   background-color: $theme_background;
   box-sizing: border-box;
   overflow: hidden;

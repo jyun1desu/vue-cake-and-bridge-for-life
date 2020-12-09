@@ -59,6 +59,12 @@
             <span class="name">{{ playersInfo[0].name }}</span>
           </div>
         </div>
+        <div class="played_cards">
+          <UserCard class="card top" :card="{ suit: 'heart', number: 10 }" />
+          <UserCard class="card left" :card="{ suit: 'heart', number: 10 }" />
+          <UserCard class="card right" :card="{ suit: 'heart', number: 10 }" />
+          <UserCard class="card bottom" :card="{ suit: 'heart', number: 10 }" />
+        </div>
       </div>
       <div class="game__info">
         <div class="trump">
@@ -192,9 +198,10 @@ export default {
       console.log("重新牌局！");
     },
     playTheCard(card) {
-      const cardIndex = this.usersDeck.indexOf(card)
-      this.usersDeck.splice(cardIndex,1)
-      if(!this.thisRoundSuit) this.$store.commit('assignThisRoundSuit',card.suit)
+      const cardIndex = this.usersDeck.indexOf(card);
+      this.usersDeck.splice(cardIndex, 1);
+      if (!this.thisRoundSuit)
+        this.$store.commit("assignThisRoundSuit", card.suit);
     },
     hasRoundSuitCard(deck = []) {
       const shouldPlaySuit = this.thisRoundSuit;
@@ -428,6 +435,41 @@ export default {
         background-color: #fff;
         border-top-right-radius: 5px;
         border-bottom-right-radius: 5px;
+      }
+    }
+  }
+
+  .played_cards {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    .card {
+      @include card_ui;
+      width: 13vw;
+      height: 16vw;
+      position: absolute;
+      box-shadow: 1px 1px 2px 1px $masking;
+      &.bottom {
+        left: 50%;
+        bottom: 20px;
+        transform: translateX(-50%);
+      }
+      &.top {
+        left: 50%;
+        top: 20px;
+        transform: translateX(-50%);
+      }
+      &.left {
+        left: 20px;
+        top: 50%;
+        transform-origin: left top;
+        transform: rotate(90deg) translate(-50%,-100%);
+      }
+      &.right {
+        right: 20px;
+        top:50%;
+        transform-origin: right top;
+        transform: rotate(90deg) translateX(50%);
       }
     }
   }

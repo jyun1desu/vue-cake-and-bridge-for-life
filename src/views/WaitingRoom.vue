@@ -147,6 +147,10 @@ export default {
       letter-spacing: 1px;
       color: rgb(167, 167, 167);
 
+      .radio {
+        @include radio_style(15px, 10px);
+      }
+
       &.chosen {
         &.team1 {
           color: $button_color;
@@ -159,10 +163,6 @@ export default {
           .radio::after {
             background-color: $title_font_color;
           }
-        }
-
-        .radio {
-          @include radio_style(15px,10px);
         }
       }
     }
