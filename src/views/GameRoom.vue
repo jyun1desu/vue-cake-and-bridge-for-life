@@ -2,11 +2,11 @@
   <div class="game_room">
     <div class="game">
       <GiveUpThisDeckDialog
-        v-if="dealDone && !isOKtoGoOn && badLuck"
+        v-if="dealDone && badLuck && !isOKtoGoOn"
         @continueGame="isOKtoGoOn = true"
         @restartGame="isOKtoGoOn = false"
       />
-      <BiddingDialog />
+      <BiddingDialog v-if="!someonebadLuck && !hasTrump" />
       <div class="players_with_card">
         <div class="player player__cross">
           <div
@@ -34,7 +34,7 @@
             @pick-suit="pickACard"
             :now-pick-suit="nowPickSuit"
             class="card"
-            v-for="card in deck[3]"
+            v-for="card in deck[2]"
             :key="card.suit + card.number"
             :card="card"
           ></UserCard>
@@ -44,27 +44,32 @@
         <div class="players_info">
           <div class="top">
             <span class="team team1"></span>
-            <span class="name">jyun1</span>
+            <span class="name">{{ playersInfo[3].name }}</span>
           </div>
           <div class="left">
             <span class="team team2"></span>
-            <span class="name">熊熊</span>
+            <span class="name">{{ playersInfo[1].name }}</span>
           </div>
           <div class="right">
             <span class="team team2"></span>
-            <span class="name">阿胡</span>
+            <span class="name">{{ playersInfo[2].name }}</span>
           </div>
           <div class="bottom">
             <span class="team team1"></span>
-            <span class="name">自己</span>
+            <span class="name">{{ playersInfo[0].name }}</span>
           </div>
         </div>
       </div>
       <div class="game__info">
         <div class="trump">
           <span>王<br />牌</span>
-          <span :class="{ red_suit: true, black_suit: false }" class="suit"
-            ></span
+          <span
+            :class="{
+              red_suit: suitColor === 'red',
+              black_suit: suitColor === 'black',
+            }"
+            class="suit"
+            >{{ hasTrump ? hasTrump.suit : "" }}</span
           >
         </div>
         <div class="tricks">
@@ -74,14 +79,14 @@
               <span class="team__name"></span>
               <span class="team__tricks">
                 <span class="now_win">0</span>
-                <span class="should_win">/7</span>
+                <span class="should_win">/{{ teamOneInfo.shouldWin }}</span>
               </span>
             </div>
             <div class="team team2">
               <span class="team__name"></span>
               <span class="team__tricks">
                 <span class="now_win">0</span>
-                <span class="should_win">/7</span>
+                <span class="should_win">/{{ teamTwoInfo.shouldWin }}</span>
               </span>
             </div>
           </span>
@@ -169,7 +174,7 @@ export default {
       ],
       dealDone: true,
       nowPickSuit: null,
-      isOKtoGoOn: true,
+      isOKtoGoOn: null,
     };
   },
   methods: {
@@ -188,8 +193,16 @@ export default {
     },
   },
   computed: {
+    suitColor() {
+      if (!this.hasTrump) return false;
+      if (this.hasTrump.suit === "♦" || this.hasTrump.suit === "♥") {
+        return "red";
+      } else {
+        return "black";
+      }
+    },
     badLuck() {
-      const deck = this.deck[3];
+      const deck = this.deck[2];
       if (deck.length === 13) {
         const deckPoint = deck
           .map((card) => card.number)
@@ -201,6 +214,30 @@ export default {
       } else {
         return false;
       }
+    },
+    hasTrump() {
+      return this.$store.state.gameInfo.trump;
+    },
+    someonebadLuck() {
+      if (this.isOKtoGoOn) {
+        return false;
+      }
+      return this.$store.getters.someonebadLuck;
+    },
+    someoneGiveUp() {
+      return this.$store.getters.someoneGiveUp;
+    },
+    playersInfo() {
+      return this.$store.state.players;
+    },
+    gameInfo() {
+      return this.$store.state.gameInfo;
+    },
+    teamOneInfo() {
+      return this.$store.state.gameInfo.team[0];
+    },
+    teamTwoInfo() {
+      return this.$store.state.gameInfo.team[1];
     },
   },
   watch: {

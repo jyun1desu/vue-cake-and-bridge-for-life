@@ -1,10 +1,10 @@
 <template>
   <div class="bidding_page">
-    <div class="dialog">
+    <div :class="{ has_picked: userNowPickedBind }" class="dialog">
       <h4 class="title">BINDING</h4>
       <div class="players_bind">
         <div
-          v-for="(player, index) in playerBind"
+          v-for="(player, index) in playersInfo"
           :key="'player' + index"
           :class="{
             team1: player.team === 'team1',
@@ -36,10 +36,7 @@
         </div>
       </div>
       <form class="user_bind_form">
-        <div
-          :class="{ highlight: bindingHintText === `It's your turn!` }"
-          class="hint"
-        >
+        <div :class="{ highlight: isUsersTurn }" class="hint">
           {{ bindingHintText }}
         </div>
         <div class="choose_list">
@@ -49,13 +46,20 @@
               class="trick"
               :trickNumber="trick"
               :nowPickedBind="userNowPickedBind"
-              :nowBind="nowBind"
+              :isUsersTurn="isUsersTurn"
               :key="'trick' + trick"
-              v-for="trick in callTrump.trick"
+              v-for="trick in nowAvailibleTricks"
             ></CallList>
           </div>
         </div>
-        <button :class="{ call: true, pass: !userNowPickedBind }">
+        <button
+          @click.prevent="callTheBind"
+          :class="{
+            not_users_turn: !isUsersTurn,
+            call: true,
+            pass: !userNowPickedBind,
+          }"
+        >
           {{ userBindingHint }}
         </button>
       </form>
@@ -72,14 +76,6 @@ export default {
   },
   data() {
     return {
-      playerBind: [
-        { name: "jyun1", binds: [], team: "team1" },
-        { name: "尼可", binds: [], team: "team2" },
-        { name: "麥", binds: [], team: "team1" },
-        { name: "孟孟", binds: [], team: "team2" },
-      ],
-      nowBindingPlayer: "麥",
-      nowBind: { number: 2, suit: "♣" },
       userNowPickedBind: "",
       callTrump: {
         trick: [1, 2, 3, 4],
@@ -98,17 +94,56 @@ export default {
         this.userNowPickedBind = chosen;
       }
     },
+    callTheBind() {
+      if (!this.isUsersTurn) return;
+      if (!this.userNowPickedBind) {
+        this.$store.commit("playerPass");
+        //更新上方框框裡的內容(待)
+        if (this.$store.state.nowPassedPlayer === 3) {
+          this.$store.commit("trumpDecide", this.$store.state.nowBinding.bind);
+          this.$store.commit("decideWinTricks");
+        }
+      } else {
+        this.$store.commit("updateNowBinding", {
+          who: this.nowBindingPlayer,
+          numberAndSuit: this.userNowPickedBind,
+        });
+        this.userNowPickedBind = "";
+        //更新上方框框裡的內容(待)
+      }
+    },
   },
   computed: {
+    isUsersTurn() {
+      return this.nowBindingPlayer === this.usersInfo.name;
+    },
     bindingHintText() {
-      return this.nowBindingPlayer === "麥"
-        ? "It's your turn!"
-        : "還沒輪到你～";
+      return this.isUsersTurn ? "輪到你囉！" : "還沒輪到你～";
     },
     userBindingHint() {
+      if (!this.isUsersTurn) return "X";
       if (!this.userNowPickedBind) return "PASS!";
       else
         return `喊${this.userNowPickedBind.number}${this.userNowPickedBind.suit}`;
+    },
+    nowAvailibleTricks() {
+      const tricks = this.callTrump.trick.filter((trick) => {
+        if (this.nowBind.suit === "♠") return trick > this.nowBind.number;
+        else return trick >= this.nowBind.number;
+      });
+      return tricks;
+    },
+    nowBind() {
+      return this.$store.state.nowBinding.bind;
+    },
+    playersInfo() {
+      return this.$store.state.players;
+    },
+    nowBindingPlayer() {
+      return this.$store.state.nowBindingPlayer;
+    },
+    usersInfo() {
+      return this.$store.getters.userInfo;
     },
   },
 };
@@ -182,6 +217,16 @@ export default {
             }
           }
         }
+      }
+    }
+    &.has_picked {
+      &::after {
+        content: "再次點擊相同選項可以取消選擇";
+        display: block;
+        font-size: 12px;
+        color: $black_suit_color;
+        text-align: center;
+        margin: 10px 0;
       }
     }
   }
@@ -261,8 +306,11 @@ export default {
     overflow: hidden;
 
     .hint {
-      background-color: #dcdcdc;
+      background-color: $unable_color;
       &.highlight {
+        font-size: 18px;
+        letter-spacing: 1px;
+        color: $title_font_color;
         background-color: $highlight_color;
       }
       text-align: center;
@@ -285,6 +333,9 @@ export default {
       letter-spacing: 5px;
       &.pass {
         background-color: $pass_color;
+      }
+      &.not_users_turn {
+        background-color: $unable_color;
       }
     }
   }

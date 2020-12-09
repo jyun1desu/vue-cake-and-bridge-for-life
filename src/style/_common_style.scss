@@ -25,6 +25,7 @@
 }
 
 @mixin radio_style($w,$ml) {
+    cursor: pointer;
     position: relative;
     display: inline-block;
     width: $w;

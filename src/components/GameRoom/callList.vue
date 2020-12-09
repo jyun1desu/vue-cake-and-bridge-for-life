@@ -10,6 +10,7 @@
           nowBind.number > trickNumber ||
           (nowBind.number === trickNumber &&
             suits.indexOf(suit) <= suits.indexOf(nowBind.suit)),
+        not_users_turn: !isUsersTurn,
       }"
       class="suit"
       :key="'suit' + index"
@@ -23,7 +24,7 @@
 
 <script>
 export default {
-  props: ["trickNumber", "nowPickedBind", "nowBind"],
+  props: ["trickNumber", "nowPickedBind", "isUsersTurn"],
   data() {
     return {
       suits: ["♣", "♦", "♥", "♠"],
@@ -40,6 +41,11 @@ export default {
       const number = this.trickNumber;
       this.$emit("chooseBind", { number, suit });
     },
+  },
+  computed: {
+    nowBind() {
+      return this.$store.state.nowBinding.bind;
+		},
   },
 };
 </script>
@@ -64,26 +70,24 @@ export default {
   }
 
   .suit {
+    &.not_users_turn {
+      .pattern {
+        color: $unable_color !important;
+      }
+    }
     &.unavailible {
       .radio {
-        overflow: hidden;
-        position: relative;
-        &::before {
-          content: "X";
-          font-size: 12px;
-          display: block;
-          text-align: center;
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-        }
+        cursor: default;
+      }
+
+      .pattern {
+        color: $unable_color !important;
       }
     }
     &.chosen {
       .radio {
         &::after {
-          background-color: $black_suit_color;
+          background-color: #dcdcdc;
         }
       }
     }
