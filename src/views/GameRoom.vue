@@ -1,7 +1,10 @@
 <template>
   <div class="game_room">
     <div
-      @click="nowPickSuit = null"
+      @click="
+        nowPickSuit = null;
+        showWonTricks = false;
+      "
       :class="{ half_seen: showWonTricks }"
       class="game"
     >
@@ -10,8 +13,8 @@
         @continueGame="isOKtoGoOn = true"
         @restartGame="isOKtoGoOn = false"
       />
-      <BiddingDialog v-if="someonebadLuck && !hasTrump" />
-      <div class="players_with_card">
+      <BiddingDialog v-if="!someonebadLuck && !hasTrump" />
+      <div v-if="dealDone" class="players_with_card">
         <div class="player player__cross">
           <div
             class="card"
@@ -110,10 +113,30 @@
     <div :class="{ show: showWonTricks }" class="won_tricks">
       <p class="title">你贏的墩們</p>
     </div>
-    <div @click="showWonTricks = !showWonTricks" class="toggle">
+
+    <div :class="{ show: showSettings }" class="settings"></div>
+
+    <div
+    v-show="!showSettings"
+      :class="{ show: showWonTricks }"
+      @click.stop="showWonTricks = !showWonTricks;showSettings=false"
+      class="toggle"
+    >
+      <div 
+      class="icon">
+        <span class="card"></span>
+        <span class="card"></span>
+      </div>
+    </div>
+
+    <div
+      :class="{ show: showSettings }"
+      @click.stop="showSettings = !showSettings;showWonTricks=false"
+      class="toggle_settings"
+    >
       <div class="icon">
-        <span class="card"></span>
-        <span class="card"></span>
+        <span class="cross vertical"></span>
+        <span class="cross horizental"></span>
       </div>
     </div>
   </div>
@@ -199,6 +222,7 @@ export default {
       isOKtoGoOn: null,
       userPlayedCard: "",
       showWonTricks: false,
+      showSettings: false,
     };
   },
   methods: {
@@ -585,18 +609,7 @@ export default {
   }
 }
 .toggle {
-  z-index: 11;
-  transition: all 0.5s;
-  position: absolute;
-  bottom: 30vw;
-  left: 100%;
-  transform: translateX(-50%);
-  width: 17vw;
-  height: 17vw;
-  border-radius: 50%;
-  background-color: #f5ab57;
-  display: flex;
-  align-items: center;
+  @include toggle_ui($main_orange, 30vw);
   .icon {
     display: flex;
     .card {
@@ -606,13 +619,64 @@ export default {
       border-radius: 2px;
       border: 1px solid #fff;
       background-color: #f5ab57;
+      transition: 0.4s all;
       &:nth-child(1) {
-        transform: rotate(-21deg) translate(7px, 1px);
+        transform: translate(8px, 0px);
+        z-index: 12;
+      }
+    }
+  }
+
+  &.show {
+    .card {
+      &:nth-child(1) {
+        transform: rotate(-15deg) translate(7px, 1px);
       }
       &:nth-child(2) {
         transform: rotate(15deg) translate(2px, -2px);
       }
     }
+  }
+}
+
+.toggle_settings {
+  @include toggle_ui($button_warn_color, 9vw);
+
+  &.show {
+    .cross {
+      &.vertical {
+        transform: rotate(45deg);
+      }
+      &.horizental {
+        transform: rotate(-45deg);
+      }
+    }
+  }
+  .icon {
+    position: relative;
+    margin-left: 8px;
+  }
+  .cross {
+    display: block;
+    width: 13px;
+    border-top: 1px solid #fff;
+    position: absolute;
+    transition: 0.4s all;
+    transform-origin: center;
+
+    &.vertical {
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.settings {
+  @include toggle_list_ui;
+  width: 50vw;
+  height: 40vh;
+  bottom: 5vw;
+  &.show {
+    left: 50vw;
   }
 }
 </style>

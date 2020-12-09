@@ -9,11 +9,11 @@
           :class="{
             team1: player.team === 'team1',
             team2: player.team === 'team2',
-            now_player: player.name === nowBindingPlayer,
+            now_player: player.name === nowPlayingPlayer,
           }"
           class="player"
         >
-          <div v-if="player.name === nowBindingPlayer" class="thinking">
+          <div v-if="player.name === nowPlayingPlayer" class="thinking">
             <div class="dots">
               <div class="dot"></div>
               <div class="dot"></div>
@@ -105,7 +105,7 @@ export default {
         }
       } else {
         this.$store.commit("updateNowBinding", {
-          who: this.nowBindingPlayer,
+          who: this.nowPlayingPlayer,
           numberAndSuit: this.userNowPickedBind,
         });
         this.userNowPickedBind = "";
@@ -115,7 +115,7 @@ export default {
   },
   computed: {
     isUsersTurn() {
-      return this.nowBindingPlayer === this.usersInfo.name;
+      return this.nowPlayingPlayer === this.usersInfo.name;
     },
     bindingHintText() {
       return this.isUsersTurn ? "輪到你囉！" : "還沒輪到你～";
@@ -139,8 +139,8 @@ export default {
     playersInfo() {
       return this.$store.state.players;
     },
-    nowBindingPlayer() {
-      return this.$store.state.nowBindingPlayer;
+    nowPlayingPlayer() {
+      return this.$store.state.nowPlayingPlayer;
     },
     usersInfo() {
       return this.$store.getters.userInfo;

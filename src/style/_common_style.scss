@@ -90,3 +90,31 @@
         margin: 10px 4px;
     }
 }
+
+@mixin toggle_ui($color, $position) {
+    z-index: 11;
+    transition: all 0.5s;
+    position: absolute;
+    bottom: $position;
+    left: 100%;
+    transform: translateX(-50%);
+    width: 17vw;
+    height: 17vw;
+    border-radius: 50%;
+    background-color: $color;
+    display: flex;
+    align-items: center;
+}
+
+@mixin toggle_list_ui{
+    position: absolute;
+    left: 100%;
+    z-index: 10;
+    background: #fff;
+    transition: all 0.5s;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    box-sizing: border-box;
+    padding: 15px;
+    overflow: scroll;
+}

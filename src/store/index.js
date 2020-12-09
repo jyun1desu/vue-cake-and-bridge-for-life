@@ -26,7 +26,7 @@ export default createStore({
       }
     },
     nowPassedPlayer: 0,
-    nowBindingPlayer: 'jyun1',
+    nowPlayingPlayer: 'jyun1',
     thisRoundOpeningLead: null,
     thisRoundSuit: '',
     userName: 'jyun1',
@@ -108,6 +108,7 @@ export default createStore({
     assignThisRoundSuit(state,suit){
       state.thisRoundSuit = suit;
     }
+    
   },
   actions: {},
   modules: {}
