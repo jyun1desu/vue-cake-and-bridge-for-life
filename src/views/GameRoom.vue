@@ -1,12 +1,16 @@
 <template>
   <div class="game_room">
-    <div class="game">
+    <div
+      @click="nowPickSuit = null"
+      :class="{ half_seen: showWonTricks }"
+      class="game"
+    >
       <GiveUpThisDeckDialog
         v-if="dealDone && badLuck && !isOKtoGoOn"
         @continueGame="isOKtoGoOn = true"
         @restartGame="isOKtoGoOn = false"
       />
-      <BiddingDialog v-if="!someonebadLuck && !hasTrump" />
+      <BiddingDialog v-if="someonebadLuck && !hasTrump" />
       <div class="players_with_card">
         <div class="player player__cross">
           <div
@@ -60,10 +64,14 @@
           </div>
         </div>
         <div class="played_cards">
-          <UserCard class="card top" :card="{ suit: 'heart', number: 10 }" />
-          <UserCard class="card left" :card="{ suit: 'heart', number: 10 }" />
-          <UserCard class="card right" :card="{ suit: 'heart', number: 10 }" />
-          <UserCard class="card bottom" :card="{ suit: 'heart', number: 10 }" />
+          <UserCard class="card top" :card="userPlayedCard" v-if="false" />
+          <UserCard class="card left" :card="userPlayedCard" v-if="false" />
+          <UserCard class="card right" :card="userPlayedCard" v-if="false" />
+          <UserCard
+            class="card bottom user"
+            v-if="userPlayedCard"
+            :card="userPlayedCard"
+          />
         </div>
       </div>
       <div class="game__info">
@@ -99,7 +107,15 @@
         </div>
       </div>
     </div>
-    <div class="settings"></div>
+    <div :class="{ show: showWonTricks }" class="won_tricks">
+      <p class="title">你贏的墩們</p>
+    </div>
+    <div @click="showWonTricks = !showWonTricks" class="toggle">
+      <div class="icon">
+        <span class="card"></span>
+        <span class="card"></span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -181,6 +197,8 @@ export default {
       dealDone: true,
       nowPickSuit: null,
       isOKtoGoOn: null,
+      userPlayedCard: "",
+      showWonTricks: false,
     };
   },
   methods: {
@@ -200,6 +218,7 @@ export default {
     playTheCard(card) {
       const cardIndex = this.usersDeck.indexOf(card);
       this.usersDeck.splice(cardIndex, 1);
+      this.userPlayedCard = card;
       if (!this.thisRoundSuit)
         this.$store.commit("assignThisRoundSuit", card.suit);
     },
@@ -277,18 +296,23 @@ export default {
 <style lang="scss" scoped>
 .game_room {
   height: 100%;
+  background-color: #f1eaea;
   display: flex;
   flex-direction: column;
-  background-color: #f1eaea;
 }
 
 .game {
   position: relative;
-  flex: 1 1 93%;
+  flex: 0 1 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  transition: all 0.3s;
+
+  &.half_seen {
+    opacity: 0.5;
+  }
 
   &__info {
     margin-top: 40px;
@@ -451,23 +475,23 @@ export default {
       box-shadow: 1px 1px 2px 1px $masking;
       &.bottom {
         left: 50%;
-        bottom: 20px;
+        bottom: 30px;
         transform: translateX(-50%);
       }
       &.top {
         left: 50%;
-        top: 20px;
+        top: 30px;
         transform: translateX(-50%);
       }
       &.left {
-        left: 20px;
+        left: 30px;
         top: 50%;
         transform-origin: left top;
-        transform: rotate(90deg) translate(-50%,-100%);
+        transform: rotate(90deg) translate(-50%, -100%);
       }
       &.right {
-        right: 20px;
-        top:50%;
+        right: 30px;
+        top: 50%;
         transform-origin: right top;
         transform: rotate(90deg) translateX(50%);
       }
@@ -534,10 +558,61 @@ export default {
   }
 }
 
-.settings {
-  width: 100%;
-  height: 7%;
-  background-color: #f9f9f9;
-  margin-top: auto;
+.won_tricks {
+  position: absolute;
+  width: 70vw;
+  height: 50vh;
+  bottom: 20vw;
+  left: 100%;
+  z-index: 10;
+  background: #fff;
+  transition: all 0.5s;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+  box-sizing: border-box;
+  padding: 15px;
+  overflow: scroll;
+  &.show {
+    left: 30vw;
+  }
+
+  .title {
+    margin: 0;
+    text-align: center;
+    letter-spacing: 1px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f5ab57;
+  }
+}
+.toggle {
+  z-index: 11;
+  transition: all 0.5s;
+  position: absolute;
+  bottom: 30vw;
+  left: 100%;
+  transform: translateX(-50%);
+  width: 17vw;
+  height: 17vw;
+  border-radius: 50%;
+  background-color: #f5ab57;
+  display: flex;
+  align-items: center;
+  .icon {
+    display: flex;
+    .card {
+      display: block;
+      width: 9px;
+      height: 13px;
+      border-radius: 2px;
+      border: 1px solid #fff;
+      background-color: #f5ab57;
+      &:nth-child(1) {
+        transform: rotate(-21deg) translate(7px, 1px);
+      }
+      &:nth-child(2) {
+        transform: rotate(15deg) translate(2px, -2px);
+      }
+    }
+  }
 }
 </style>

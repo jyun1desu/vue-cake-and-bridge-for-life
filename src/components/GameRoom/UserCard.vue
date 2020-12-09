@@ -1,6 +1,6 @@
 <template>
   <div 
-  @click="$emit('pick-suit',card)"
+  @click.stop="$emit('pick-suit',card)"
   :class="{now_pick:nowPickSuit===card.suit}"
   class="user_card">
     <div class="card_info">
