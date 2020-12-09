@@ -34,7 +34,7 @@
             @pick-suit="pickACard"
             :now-pick-suit="nowPickSuit"
             class="card"
-            v-for="card in deck[2]"
+            v-for="card in usersDeck"
             :key="card.suit + card.number"
             :card="card"
           ></UserCard>
@@ -179,10 +179,10 @@ export default {
   },
   methods: {
     pickACard(pickedCard) {
+      const haveTheSuit = this.hasRoundSuitCard(this.usersDeck);
+      if (haveTheSuit && pickedCard.suit !== this.thisRoundSuit) return;
       if (this.nowPickSuit === pickedCard.suit) {
-        //double check要出哪一張牌
-        //出牌
-        //出完牌reset NowPickSuit
+        this.playTheCard(pickedCard);
         this.nowPickSuit = null;
       } else {
         this.nowPickSuit = pickedCard.suit;
@@ -190,6 +190,19 @@ export default {
     },
     restartGame() {
       console.log("重新牌局！");
+    },
+    playTheCard(card) {
+      const cardIndex = this.usersDeck.indexOf(card)
+      this.usersDeck.splice(cardIndex,1)
+      if(!this.thisRoundSuit) this.$store.commit('assignThisRoundSuit',card.suit)
+    },
+    hasRoundSuitCard(deck = []) {
+      const shouldPlaySuit = this.thisRoundSuit;
+      if (shouldPlaySuit) {
+        return deck.some((card) => card.suit === shouldPlaySuit);
+      } else {
+        return false;
+      }
     },
   },
   computed: {
@@ -202,7 +215,7 @@ export default {
       }
     },
     badLuck() {
-      const deck = this.deck[2];
+      const deck = this.usersDeck;
       if (deck.length === 13) {
         const deckPoint = deck
           .map((card) => card.number)
@@ -238,6 +251,12 @@ export default {
     },
     teamTwoInfo() {
       return this.$store.state.gameInfo.team[1];
+    },
+    thisRoundSuit() {
+      return this.$store.state.thisRoundSuit;
+    },
+    usersDeck() {
+      return this.deck[2];
     },
   },
   watch: {

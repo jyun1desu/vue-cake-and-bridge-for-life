@@ -28,7 +28,7 @@ export default createStore({
     nowPassedPlayer: 0,
     nowBindingPlayer: 'jyun1',
     thisRoundOpeningLead: null,
-    thisRoundCards: [],
+    thisRoundSuit: '',
     userName: 'jyun1',
     players: [{
         name: 'jyun1',
@@ -104,6 +104,9 @@ export default createStore({
         state.gameInfo.team[1].shouldWin = 6+number;
         state.gameInfo.team[0].shouldWin = 14-6-number;
       }
+    },
+    assignThisRoundSuit(state,suit){
+      state.thisRoundSuit = suit;
     }
   },
   actions: {},
