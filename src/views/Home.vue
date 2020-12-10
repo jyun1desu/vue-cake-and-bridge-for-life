@@ -18,10 +18,19 @@
 
 <script>
 import Logo from "@/components/Logo";
+import io from "socket.io-client";
 export default {
   name: "Home",
+  created() {
+    const socket = io();
+    this.socket = socket;
+    socket.on("connect", () => {
+      console.log(socket.id);
+    });
+  },
   data() {
     return {
+      socket: {},
       userName: "",
       nowPlayersAmount: 2,
     };
