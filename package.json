@@ -9,10 +9,12 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "firebase": "^8.1.2",
     "socket.io-client": "^3.0.4",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0-0",
     "vue-socket.io": "^3.0.10",
+    "vuefire": "^2.2.5",
     "vuex": "^4.0.0-0"
   },
   "devDependencies": {
@@ -40,7 +42,9 @@
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "rules": {}
+    "rules": {
+      "no-unused-vars":"off"
+    }
   },
   "browserslist": [
     "> 1%",

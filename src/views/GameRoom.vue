@@ -162,8 +162,14 @@ import UserCard from "../components/GameRoom/UserCard.vue";
 import GiveUpThisDeckDialog from "../components/GameRoom/giveUpThisDeckDialog.vue";
 import BiddingDialog from "../components/GameRoom/biddingDialog.vue";
 import ComfirmLeaveDialog from "../components/GameRoom/leaveGameDialog.vue";
-import WonTricksBox from '../components/GameRoom/wonTricks.vue'
+import WonTricksBox from '../components/GameRoom/wonTricks.vue';
 export default {
+  mounted(){
+    ref.on('value',function(snapshot){
+      var val = snapshot.val();
+      console.log('ss')
+    })
+  },
   name: "GameRoom",
   components: {
     UserCard,
