@@ -6,7 +6,7 @@
         showWonTricks = false;
         showSettings = false;
       "
-      :class="{ half_seen: showWonTricks||showSettings }"
+      :class="{ half_seen: showWonTricks || showSettings }"
       class="game"
     >
       <GiveUpThisDeckDialog
@@ -15,6 +15,10 @@
         @restartGame="isOKtoGoOn = false"
       />
       <BiddingDialog v-if="!someonebadLuck && !hasTrump" />
+      <ComfirmLeaveDialog
+        @keepPlaying="showComfirmLeave = false"
+        v-if="showComfirmLeave"
+      />
       <div v-if="dealDone" class="players_with_card">
         <div class="player player__cross">
           <div
@@ -113,19 +117,16 @@
     </div>
     <div :class="{ show: showWonTricks }" class="won_tricks">
       <p class="title">你贏的墩們</p>
+      <WonTricksBox/>
     </div>
 
     <div :class="{ show: showSettings }" class="settings">
-      <button 
-      @click="backToWaitingRoom"
-      class="change_mate">更換隊友</button>
-      <button 
-      @click="leaveGame"
-      class="exit">離開遊戲</button>
+      <button @click="backToWaitingRoom" class="change_mate">更換隊友</button>
+      <button @click="leaveGame" class="exit">離開遊戲</button>
     </div>
 
     <div
-      v-show="hasTrump&&!showSettings"
+      v-show="hasTrump && !showSettings"
       :class="{ show: showWonTricks }"
       @click.stop="
         showWonTricks = !showWonTricks;
@@ -140,7 +141,7 @@
     </div>
 
     <div
-      v-show="!showWonTricks"
+      v-show="!showWonTricks && !showComfirmLeave"
       :class="{ show: showSettings }"
       @click.stop="
         showSettings = !showSettings;
@@ -160,12 +161,16 @@
 import UserCard from "../components/GameRoom/UserCard.vue";
 import GiveUpThisDeckDialog from "../components/GameRoom/giveUpThisDeckDialog.vue";
 import BiddingDialog from "../components/GameRoom/biddingDialog.vue";
+import ComfirmLeaveDialog from "../components/GameRoom/leaveGameDialog.vue";
+import WonTricksBox from '../components/GameRoom/wonTricks.vue'
 export default {
   name: "GameRoom",
   components: {
     UserCard,
     GiveUpThisDeckDialog,
     BiddingDialog,
+    ComfirmLeaveDialog,
+    WonTricksBox,
   },
   data() {
     return {
@@ -237,6 +242,7 @@ export default {
       userPlayedCard: "",
       showWonTricks: false,
       showSettings: false,
+      showComfirmLeave: false,
     };
   },
   methods: {
@@ -268,17 +274,18 @@ export default {
         return false;
       }
     },
-    backToWaitingRoom(){
+    backToWaitingRoom() {
       //向所有人發送：有人要換隊友，3秒後導向等待室...
       //將所有人導向等待室
-      console.log('換！')
+      console.log("換！");
     },
-    leaveGame(){
+    leaveGame() {
+      this.showComfirmLeave = true;
+      this.showSettings = false;
       //向所有人發送：有人離開了，3秒後導向等待室...
       //將使用者導向home,其他人導向等待室
-      console.log('掰')
-
-    }
+      console.log("掰");
+    },
   },
   computed: {
     suitColor() {
@@ -693,7 +700,7 @@ export default {
     left: 50vw;
   }
 
-  button{
+  button {
     @include button_style;
     margin-bottom: 10px;
     font-size: 14px;

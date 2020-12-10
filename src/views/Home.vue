@@ -11,28 +11,25 @@
       >
         {{ message }}
       </button>
-      <p class="now_players">現在人數:{{ nowPlayersAmount }}人/上限4人</p>
+      <p class="now_players">現在人數:{{ a }}人/上限4人</p>
     </div>
   </div>
 </template>
 
 <script>
+let ws = new WebSocket('ws://localhost:3000');
 import Logo from "@/components/Logo";
-import io from "socket.io-client";
 export default {
   name: "Home",
-  created() {
-    const socket = io();
-    this.socket = socket;
-    socket.on("connect", () => {
-      console.log(socket.id);
-    });
+  mounted(){
+    ws.onmessage=(data)=>
+    {this.a=data.data}
   },
   data() {
     return {
-      socket: {},
       userName: "",
       nowPlayersAmount: 2,
+      a: "",
     };
   },
   components: {
@@ -40,13 +37,16 @@ export default {
   },
   computed: {
     message() {
-      return this.nowPlayersAmount == 4 ? "滿員中，請耐心等候" : "加入遊戲";
+      if(this.userName.length>7) return '請輸入六個字內'
+      else if(!this.userName.length) return '請至少輸入一個字'
+      else return this.nowPlayersAmount == 4 ? "滿員中，請耐心等候" : "加入遊戲";
     },
   },
   methods: {
     enterGame() {
+      ws.send('hello')
       if (this.nowPlayersAmount === 4) return;
-      if (!this.userName.length) return;
+      if (!this.userName.length || this.userName.length>6) return;
       this.$router.push({
         name: "WaitingRoom",
       });
