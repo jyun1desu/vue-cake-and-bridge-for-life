@@ -11,20 +11,20 @@
       >
         {{ message }}
       </button>
-      <p class="now_players">現在人數:{{ a }}人/上限4人</p>
+      <p class="now_players">現在人數:{{ nowPlayersAmount }}人/上限4人</p>
     </div>
   </div>
 </template>
 
 <script>
-let ws = new WebSocket('ws://localhost:3000');
+// let ws = new WebSocket('ws://localhost:3000');
 import Logo from "@/components/Logo";
 export default {
   name: "Home",
-  mounted(){
-    ws.onmessage=(data)=>
-    {this.a=data.data}
-  },
+  // mounted(){
+  //   ws.onmessage=(data)=>
+  //   {this.a=data.data}
+  // },
   data() {
     return {
       userName: "",
@@ -44,7 +44,6 @@ export default {
   },
   methods: {
     enterGame() {
-      ws.send('hello')
       if (this.nowPlayersAmount === 4) return;
       if (!this.userName.length || this.userName.length>6) return;
       this.$router.push({
