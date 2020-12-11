@@ -25,7 +25,7 @@ const routes = [{
   },
   {
     path: '/gameroom/:userName',
-    name: 'GameRoom',
+    name: 'gameroom',
     component: () => import( /* webpackChunkName: "about" */ '../views/GameRoom.vue'),
     beforeEnter(routerTo, from, next) {
       if (!store.state.userName) {

@@ -25,6 +25,7 @@ export default createStore({
         suit: "♣"
       }
     },
+    gameOrder:null,
     nowPassedPlayer: 0,
     nowPlayingPlayer: 'jyun1',
     thisRoundOpeningLead: null,
@@ -230,6 +231,9 @@ export default createStore({
     setUserName(state, userInput) {
       state.userName = userInput;
     },
+    setGameOrder(state,array){
+      state.gameOrder = array;
+    }
   },
   actions: {},
   modules: {}

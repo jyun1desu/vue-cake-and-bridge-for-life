@@ -1,4 +1,5 @@
 <template>
+  <LoadingDialog v-if="showWaitingDialog === true" />
   <div class="wait_room">
     <button @click="leaveGame" class="leave_button">不打了不打了</button>
     <div class="players">
@@ -67,8 +68,12 @@
 
 <script>
 import db from "../db.js";
+import LoadingDialog from "../components/waitingRoom/loadingDialog.vue";
 export default {
   name: "WaitingRoom",
+  components: {
+    LoadingDialog,
+  },
   created() {
     const nowPlayers = db.database().ref("/playersInfo/");
     nowPlayers.once("value", (data) => {
@@ -103,6 +108,7 @@ export default {
       userOrdrerIndex: "",
       chosenTeam: "",
       team: [],
+      showWaitingDialog: false,
     };
   },
   methods: {
@@ -119,18 +125,28 @@ export default {
     },
     enterGame() {
       if (this.buttonWarn) return;
-      //之後要插入一個等待所有人都按同意的等待畫面
-      this.$router.push({
-        name: "GameRoom",
-        params: { userName: this.id },
+      const user = "/playersInfo/" + this.userID;
+      const userInfo = db.database().ref(user);
+      userInfo.update({ OKtoPlay: true });
+      this.showWaitingDialog = true;
+
+      const playerInfo = Array.from(this.playerOrder).map((player, index) => {
+        return {
+          name: player,
+          team: this.team[index],
+        };
       });
+      const team1 = playerInfo.filter((player) => player.team === "team1");
+      const team2 = playerInfo.filter((player) => player.team === "team2");
+      const orderArray = [team1[0], team2[0], team1[1], team2[1]];
+      this.$store.commit("setGameOrder", orderArray);
     },
   },
   computed: {
     buttonMessage() {
-      if (this.team.length !== 4) return "人數不足⋯⋯";
       const team1 = this.team.filter((team) => team === "team1").length;
       const team2 = this.team.filter((team) => team === "team2").length;
+      if (team1 + team2 !== 4) return "人數不足⋯⋯";
       const msg = team1 === team2 ? "開打啦！" : "人數不一樣怎麼打！";
       return msg;
     },
@@ -153,6 +169,17 @@ export default {
       const nowPlayersArray = Object.entries(nowPlayers).map((a) => a[1].name);
       this.team = teamArray;
       this.playerOrder = nowPlayersArray;
+
+      const OKtoGo = Object.entries(nowPlayers).map((a) => a[1].OKtoPlay);
+      const OKAmount = Array.from(OKtoGo).filter((answer) => answer === true)
+        .length;
+      if (OKAmount === 4) {
+        this.showWaitingDialog = false;
+        this.$router.push({
+          name: "gameroom",
+          params: { userName: this.userName },
+        });
+      }
     });
   },
 };

@@ -117,7 +117,7 @@
     </div>
     <div :class="{ show: showWonTricks }" class="won_tricks">
       <p class="title">你贏的墩們</p>
-      <WonTricksBox/>
+      <WonTricksBox />
     </div>
 
     <div :class="{ show: showSettings }" class="settings">
@@ -162,14 +162,8 @@ import UserCard from "../components/GameRoom/UserCard.vue";
 import GiveUpThisDeckDialog from "../components/GameRoom/giveUpThisDeckDialog.vue";
 import BiddingDialog from "../components/GameRoom/biddingDialog.vue";
 import ComfirmLeaveDialog from "../components/GameRoom/leaveGameDialog.vue";
-import WonTricksBox from '../components/GameRoom/wonTricks.vue';
+import WonTricksBox from "../components/GameRoom/wonTricks.vue";
 export default {
-  mounted(){
-    ref.on('value',function(snapshot){
-      var val = snapshot.val();
-      console.log('ss')
-    })
-  },
   name: "GameRoom",
   components: {
     UserCard,
@@ -294,6 +288,9 @@ export default {
     },
   },
   computed: {
+    gameOrder() {
+      return this.$store.state.gameOrder;
+    },
     suitColor() {
       if (!this.hasTrump) return false;
       if (this.hasTrump.suit === "♦" || this.hasTrump.suit === "♥") {
