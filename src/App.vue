@@ -2,19 +2,6 @@
   <router-view />
 </template>
 
-<script>
-import db from './db.js'
-export default {
-  created(){
-    const a = db.database().ref('gameInfo/')
-    a.on('value',s=>{
-      const data = s.val();
-      console.log(data)
-    })
-  }
-}
-</script>
-
 <style lang="scss">
 * {
   font-family: $main_font_family;

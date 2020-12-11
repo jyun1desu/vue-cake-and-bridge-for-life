@@ -17,19 +17,21 @@
 </template>
 
 <script>
-// let ws = new WebSocket('ws://localhost:3000');
+import db from "../db.js";
 import Logo from "@/components/Logo";
 export default {
   name: "Home",
-  // mounted(){
-  //   ws.onmessage=(data)=>
-  //   {this.a=data.data}
-  // },
+  mounted() {
+    const nowPlayerAmount = db.database().ref("nowPlayerAmount");
+    nowPlayerAmount.on("value", (s) => {
+      const data = s.val();
+      this.nowPlayersAmount = data;
+    });
+  },
   data() {
     return {
       userName: "",
-      nowPlayersAmount: 2,
-      a: "",
+      nowPlayersAmount: 0,
     };
   },
   components: {
@@ -37,17 +39,27 @@ export default {
   },
   computed: {
     message() {
-      if(this.userName.length>7) return '請輸入六個字內'
-      else if(!this.userName.length) return '請至少輸入一個字'
-      else return this.nowPlayersAmount == 4 ? "滿員中，請耐心等候" : "加入遊戲";
+      if (this.nowPlayersAmount == 4) return "滿員中，請耐心等候";
+      else if (this.userName.length > 7) return "請輸入六個字內";
+      else if (!this.userName.length) return "請至少輸入一個字";
+      else return "加入遊戲";
     },
   },
   methods: {
     enterGame() {
       if (this.nowPlayersAmount === 4) return;
-      if (!this.userName.length || this.userName.length>6) return;
+      if (!this.userName.length || this.userName.length > 7) return;
+
+      const nowPlayerAmount = db.database().ref("nowPlayerAmount");
+      const playersInfo = db.database().ref("/playersInfo/");
+      nowPlayerAmount.set(this.nowPlayersAmount + 1);
+      playersInfo
+        .child(`player${this.nowPlayersAmount}`)
+        .set({ name: this.userName, team: "" });
+      this.$store.commit("setUserName", this.userName);
       this.$router.push({
         name: "WaitingRoom",
+        params: { userName: this.userName },
       });
     },
   },

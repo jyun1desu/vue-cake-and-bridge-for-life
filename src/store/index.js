@@ -29,7 +29,7 @@ export default createStore({
     nowPlayingPlayer: 'jyun1',
     thisRoundOpeningLead: null,
     thisRoundSuit: '',
-    userName: 'jyun1',
+    userName: '',
     players: [{
         name: 'jyun1',
         cards: [],
@@ -226,8 +226,10 @@ export default createStore({
     },
     assignThisRoundSuit(state, suit) {
       state.thisRoundSuit = suit;
-    }
-
+    },
+    setUserName(state, userInput) {
+      state.userName = userInput;
+    },
   },
   actions: {},
   modules: {}

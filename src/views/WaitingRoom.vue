@@ -1,26 +1,48 @@
 <template>
   <div class="wait_room">
-    <button @click="showReconfirmDialog = true" class="leave_button">
-      不打了不打了
-    </button>
+    <button @click="leaveGame" class="leave_button">不打了不打了</button>
     <div class="players">
-      <div class="player player__first strawberry_team">
-        <p class="player__name">jyun1</p>
+      <div
+        :class="{
+          canele_team: team[0] === 'team2',
+          default_strawberry_team: !team[0] || team[0] === 'team1',
+        }"
+        class="player player__first"
+      >
+        <p class="player__name">{{ playerOrder[0] || "" }}</p>
       </div>
-      <div class="player player__second canele_team">
-        <p class="player__name">nico</p>
+      <div
+        :class="{
+          canele_team: !team[1] || team[1] === 'team2',
+          default_strawberry_team: team[1] === 'team1',
+        }"
+        class="player player__second"
+      >
+        <p class="player__name">{{ playerOrder[1] || "" }}</p>
       </div>
-      <div class="player player__third canele_team">
-        <p class="player__name">michael</p>
+      <div
+        :class="{
+          canele_team: !team[2] || team[2] === 'team2',
+          default_strawberry_team: team[2] === 'team1',
+        }"
+        class="player player__third"
+      >
+        <p class="player__name">{{ playerOrder[2] || "" }}</p>
       </div>
-      <div class="player player__fourth strawberry_team">
-        <p class="player__name">bear</p>
+      <div
+        :class="{
+          canele_team: team[3] === 'team2',
+          default_strawberry_team: !team[3] || team[3] === 'team1',
+        }"
+        class="player player__fourth"
+      >
+        <p class="player__name">{{ playerOrder[3] || "" }}</p>
       </div>
     </div>
     <div class="choose_team">
       <div class="options">
         <div
-          @click="chosenTeam = 'team1'"
+          @click="chooseTeam('team1')"
           :class="{ chosen: chosenTeam === 'team1' }"
           class="option team1"
         >
@@ -28,7 +50,7 @@
           <span>草莓糕</span>
         </div>
         <div
-          @click="chosenTeam = 'team2'"
+          @click="chooseTeam('team2')"
           :class="{ chosen: chosenTeam === 'team2' }"
           class="option team2"
         >
@@ -44,17 +66,52 @@
 </template>
 
 <script>
+import db from "../db.js";
 export default {
   name: "WaitingRoom",
+  created() {
+    const nowPlayers = db.database().ref("/playersInfo/");
+    nowPlayers.once("value", (data) => {
+      const nowPlayers = data.val();
+      //所有玩家順序
+      const nowPlayersArray = Object.entries(nowPlayers).map((a) => a[1].name);
+      this.playerOrder = nowPlayersArray;
+      //找到使用者是第幾個人
+      this.userOrdrerIndex = nowPlayersArray.indexOf(this.userName);
+      //找到使用者資料上的key
+      const allUsersID = Object.entries(nowPlayers).map((a) => a[0]);
+      this.userID = allUsersID[this.userOrdrerIndex];
+      //預設隊伍
+      if (this.userOrdrerIndex === 0 || this.userOrdrerIndex === 3) {
+        this.chosenTeam = "team1";
+      } else {
+        this.chosenTeam = "team2";
+      }
+      const path = "/playersInfo/" + this.userID;
+      const user = db.database().ref(path);
+      user.once("value", (data) => {
+        if (this.userID !== "") {
+          user.update({ team: this.chosenTeam });
+        }
+      });
+    });
+  },
   data() {
     return {
-      showReconfirmDialog: false,
-      chosenTeam: "team1",
-      teamRed: ["a", "b"],
-      teamBlack: ["c", "d"],
+      userID: "",
+      playerOrder: [],
+      userOrdrerIndex: "",
+      chosenTeam: "",
+      team: [],
     };
   },
   methods: {
+    chooseTeam(team) {
+      this.chosenTeam = team;
+      const user = "/playersInfo/" + this.userID;
+      const userTeamInfo = db.database().ref(user);
+      userTeamInfo.update({ team: this.chosenTeam });
+    },
     leaveGame() {
       this.$router.push({
         name: "Home",
@@ -65,17 +122,16 @@ export default {
       //之後要插入一個等待所有人都按同意的等待畫面
       this.$router.push({
         name: "GameRoom",
+        params: { userName: this.id },
       });
     },
   },
   computed: {
     buttonMessage() {
-      if (this.teamRed.length + this.teamBlack.length !== 4)
-        return "人數不足⋯⋯";
-      const msg =
-        this.teamRed.length === this.teamBlack.length
-          ? "開打啦！"
-          : "人數不一樣怎麼打！";
+      if (this.team.length !== 4) return "人數不足⋯⋯";
+      const team1 = this.team.filter((team) => team === "team1").length;
+      const team2 = this.team.filter((team) => team === "team2").length;
+      const msg = team1 === team2 ? "開打啦！" : "人數不一樣怎麼打！";
       return msg;
     },
     buttonWarn() {
@@ -85,6 +141,19 @@ export default {
         return false;
       }
     },
+    userName() {
+      return this.$store.state.userName;
+    },
+  },
+  mounted() {
+    const nowPlayers = db.database().ref("/playersInfo");
+    nowPlayers.on("value", (data) => {
+      const nowPlayers = data.val();
+      const teamArray = Object.entries(nowPlayers).map((a) => a[1].team);
+      const nowPlayersArray = Object.entries(nowPlayers).map((a) => a[1].name);
+      this.team = teamArray;
+      this.playerOrder = nowPlayersArray;
+    });
   },
 };
 </script>
@@ -113,8 +182,9 @@ export default {
     display: flex;
     justify-content: center;
     align-items: flex-end;
+    transition: all 0.2s;
 
-    &.strawberry_team {
+    &.default_strawberry_team {
       background-color: rgb(241, 224, 224);
     }
     &.canele_team {
