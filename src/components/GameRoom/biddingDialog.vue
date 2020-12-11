@@ -114,8 +114,11 @@ export default {
     },
   },
   computed: {
+    userName(){
+      return this.$store.state.userName
+    },
     isUsersTurn() {
-      return this.nowPlayingPlayer === this.usersInfo.name;
+      return this.nowPlayingPlayer === this.userName;
     },
     bindingHintText() {
       return this.isUsersTurn ? "輪到你囉！" : "還沒輪到你～";
@@ -141,9 +144,6 @@ export default {
     },
     nowPlayingPlayer() {
       return this.$store.state.nowPlayingPlayer;
-    },
-    usersInfo() {
-      return this.$store.getters.userInfo;
     },
   },
 };

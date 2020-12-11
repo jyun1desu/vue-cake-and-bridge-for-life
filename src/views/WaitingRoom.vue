@@ -139,7 +139,8 @@ export default {
       const team1 = playerInfo.filter((player) => player.team === "team1");
       const team2 = playerInfo.filter((player) => player.team === "team2");
       const orderArray = [team1[0], team2[0], team1[1], team2[1]];
-      this.$store.commit("setGameOrder", orderArray);
+      this.$store.commit('setPlayersInfo',orderArray)
+      this.$store.commit('assignFirstPlayer',orderArray[0].name)
     },
   },
   computed: {
@@ -176,7 +177,7 @@ export default {
       if (OKAmount === 4) {
         this.showWaitingDialog = false;
         this.$router.push({
-          name: "gameroom",
+          name: "GameRoom",
           params: { userName: this.userName },
         });
       }

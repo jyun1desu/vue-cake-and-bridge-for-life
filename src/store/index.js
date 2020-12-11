@@ -25,176 +25,13 @@ export default createStore({
         suit: "♣"
       }
     },
-    gameOrder:null,
     nowPassedPlayer: 0,
-    nowPlayingPlayer: 'jyun1',
+    nowPlayingPlayer: '',
     thisRoundOpeningLead: null,
     thisRoundSuit: '',
     userName: '',
-    players: [{
-        name: 'jyun1',
-        cards: [],
-        team: 'team1',
-        badLuck: false,
-        badLuckGiveUp: false
-      },
-      {
-        name: 'nico',
-        cards: [],
-        team: 'team2',
-        badLuck: false,
-        badLuckGiveUp: false
-      },
-      {
-        name: 'michael',
-        cards: [],
-        team: 'team1',
-        badLuck: false,
-        badLuckGiveUp: false
-      },
-      {
-        name: '熊熊',
-        cards: [],
-        team: 'team2',
-        badLuck: false,
-        giveUp: false,
-      },
-    ],
-    wonTricks: [
-      [{
-          suit: "heart",
-          number: 3
-        },
-        {
-          suit: "heart",
-          number: 4
-        },
-        {
-          suit: "heart",
-          number: 5
-        },
-        {
-          suit: "heart",
-          number: 7
-        }
-      ],
-      [{
-          suit: "heart",
-          number: 10
-        },
-        {
-          suit: "heart",
-          number: 12
-        },
-        {
-          suit: "club",
-          number: 2
-        },
-        {
-          suit: "club",
-          number: 7
-        }
-      ],
-      [{
-          suit: "club",
-          number: 10
-        },
-        {
-          suit: "diamond",
-          number: 1
-        },
-        {
-          suit: "diamond",
-          number: 7
-        },
-        {
-          suit: "diamond",
-          number: 9
-        }
-      ],
-      [{
-          suit: "spades",
-          number: 2
-        },
-        {
-          suit: "spades",
-          number: 4
-        },
-        {
-          suit: "spades",
-          number: 10
-        },
-        {
-          suit: "spades",
-          number: 11
-        }
-      ],
-      [{
-          suit: "heart",
-          number: 1
-        },
-        {
-          suit: "heart",
-          number: 6
-        },
-        {
-          suit: "heart",
-          number: 8
-        },
-        {
-          suit: "heart",
-          number: 11
-        }
-      ],
-      [{
-          suit: "club",
-          number: 3
-        },
-        {
-          suit: "club",
-          number: 4
-        },
-        {
-          suit: "club",
-          number: 12
-        },
-        {
-          suit: "diamond",
-          number: 3
-        }
-      ],
-      [{
-          suit: "heart",
-          number: 3
-        },
-        {
-          suit: "heart",
-          number: 4
-        },
-        {
-          suit: "heart",
-          number: 5
-        },
-        {
-          suit: "heart",
-          number: 7
-        }
-      ]
-    ],
-  },
-  getters: {
-    someoneGiveUp(state) {
-      const someone = state.players.some(player => player.giveUp === true)
-      return someone
-    },
-    someonebadLuck(state) {
-      const someone = state.players.some(player => player.badLuck === true)
-      return someone
-    },
-    userInfo(state) {
-      const userName = state.userName;
-      return state.players.find(player => player.name === userName)
-    }
+    players: [],
+    wonTricks: [],
   },
   mutations: {
     trumpDecide(state, numberAndndSuit) {
@@ -231,8 +68,11 @@ export default createStore({
     setUserName(state, userInput) {
       state.userName = userInput;
     },
-    setGameOrder(state,array){
-      state.gameOrder = array;
+    setPlayersInfo(state, info) {
+      state.players = info;
+    },
+    assignFirstPlayer(state, player) {
+      state.nowPlayingPlayer = player;
     }
   },
   actions: {},

@@ -14,7 +14,7 @@
         @continueGame="isOKtoGoOn = true"
         @restartGame="isOKtoGoOn = false"
       />
-      <BiddingDialog v-if="!someonebadLuck && !hasTrump" />
+      <BiddingDialog v-if="!hasTrump" />
       <ComfirmLeaveDialog
         @keepPlaying="showComfirmLeave = false"
         v-if="showComfirmLeave"
@@ -315,15 +315,6 @@ export default {
     },
     hasTrump() {
       return this.$store.state.gameInfo.trump;
-    },
-    someonebadLuck() {
-      if (this.isOKtoGoOn) {
-        return false;
-      }
-      return this.$store.getters.someonebadLuck;
-    },
-    someoneGiveUp() {
-      return this.$store.getters.someoneGiveUp;
     },
     playersInfo() {
       return this.$store.state.players;
