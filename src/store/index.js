@@ -30,10 +30,34 @@ export default createStore({
     thisRoundOpeningLead: null,
     thisRoundSuit: '',
     userName: '',
+    nextPlayerName: '',
     players: [],
     wonTricks: [],
+    userID: '',
+    userIndex: '',
+    userCalledBinds:[],
+  },
+  getters: {
+    nextPlayer(state) {
+      const user = state.players.find(player => player.name === state.userName)
+      const userIndex = state.players.indexOf(user)
+      let nextPlayerIndex = userIndex + 1
+      if (nextPlayerIndex > 3) {
+        nextPlayerIndex = nextPlayerIndex - 4
+      }
+      return state.players[nextPlayerIndex].name
+    },
+    isUsersTurn(state) {
+      return state.nowPlayingPlayer === state.userName;
+    }
   },
   mutations: {
+    setUserID(state, ID) {
+      state.userID = ID;
+    },
+    setUserIndex(state, index) {
+      state.userIndex = index;
+    },
     trumpDecide(state, numberAndndSuit) {
       state.gameInfo.trump = numberAndndSuit;
       state.nowPassedPlayer = 0
@@ -73,7 +97,13 @@ export default createStore({
     },
     assignFirstPlayer(state, player) {
       state.nowPlayingPlayer = player;
-    }
+    },
+    updateUserCalledBinds(state,bind){
+      state.userCalledBinds.push(bind)
+    },
+    switchToNextPlayer(state,player) {
+      state.nowPlayingPlayer = player
+    },
   },
   actions: {},
   modules: {}

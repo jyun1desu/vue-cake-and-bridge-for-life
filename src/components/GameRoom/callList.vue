@@ -24,7 +24,7 @@
 
 <script>
 export default {
-  props: ["trickNumber", "nowPickedBind", "isUsersTurn"],
+  props: ["trickNumber", "nowPickedBind"],
   data() {
     return {
       suits: ["♣", "♦", "♥", "♠"],
@@ -45,7 +45,10 @@ export default {
   computed: {
     nowBind() {
       return this.$store.state.nowBinding.bind;
-		},
+    },
+    isUsersTurn() {
+      return this.$store.getters.isUsersTurn;
+    },
   },
 };
 </script>

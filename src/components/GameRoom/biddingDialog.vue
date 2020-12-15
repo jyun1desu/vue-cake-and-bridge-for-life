@@ -23,14 +23,16 @@
           <div class="name">{{ player.name }}</div>
           <div class="called_binds">
             <p
-              v-for="(bind, i) in player.binds"
+              v-for="(bind, i) in player.calledBind"
               :key="'player' + index + 'bind' + i"
               class="binds"
               :class="{
                 passed: bind === 'pass',
+                red_suit: bind.suit === '♦' || bind.suit === '♥',
+                black_suit: bind.suit === '♣' || bind.suit === '♠',
               }"
             >
-              {{ bind }}
+              {{ bind.number+bind.suit }}
             </p>
           </div>
         </div>
@@ -55,7 +57,8 @@
         <button
           @click.prevent="callTheBind"
           :class="{
-            not_users_turn: !isUsersTurn,
+            not_users_turn:
+              !isUsersTurn || (nowBind.number === 0 && !userNowPickedBind),
             call: true,
             pass: !userNowPickedBind,
           }"
@@ -68,11 +71,34 @@
 </template>
 
 <script>
+import db from "../../db.js";
 import CallList from "./callList.vue";
 export default {
   name: "biddingDialog",
   components: {
     CallList,
+  },
+  mounted() {
+    const nowBind = db.database().ref("/nowCalledBind/");
+    const nowPlayer = db.database().ref("/nowPlayer/");
+    const players = db.database().ref("/playersInfo/");
+    nowBind.on("value", (d) => {
+      const data = d.val();
+      if (data) this.$store.commit("updateNowBinding", data);
+    });
+    nowPlayer.on("value", (d) => {
+      const data = d.val();
+      if (data) this.$store.commit("switchToNextPlayer", data);
+    });
+    players.on("value", (d) => {
+      const players = Object.entries(d.val()).map((a) => a[1]);
+      const newPlayerInfo = this.playersInfo.map((player, index) => {
+        const data = players.filter(p=>p.name===player.name)[0]
+        return data;
+      });
+      console.log(newPlayerInfo)
+      this.$store.commit("setPlayersInfo", newPlayerInfo);
+    });
   },
   data() {
     return {
@@ -96,6 +122,7 @@ export default {
     },
     callTheBind() {
       if (!this.isUsersTurn) return;
+      if (this.nowBind.number === 0 && !this.userNowPickedBind) return;
       if (!this.userNowPickedBind) {
         this.$store.commit("playerPass");
         //更新上方框框裡的內容(待)
@@ -104,27 +131,41 @@ export default {
           this.$store.commit("decideWinTricks");
         }
       } else {
-        this.$store.commit("updateNowBinding", {
+        //更新現在binding
+        const data = {
           who: this.nowPlayingPlayer,
           numberAndSuit: this.userNowPickedBind,
-        });
-        this.userNowPickedBind = "";
+        };
+        const nowBind = db.database().ref("/");
+        nowBind.child("nowCalledBind").update(data);
+        //nowPlayer更新給user的下一家
+        nowBind.child("nowPlayer").set(this.nextPlayer);
         //更新上方框框裡的內容(待)
+        const playersInfo = db.database().ref("/playersInfo/");
+        this.$store.commit("updateUserCalledBinds", this.userNowPickedBind);
+        playersInfo
+          .child(`player${this.userIndex + 1}`)
+          .child("calledBind")
+          .set(this.userCalledBinds);
+        //初始user目前喊的王
+        this.userNowPickedBind = "";
       }
     },
   },
   computed: {
-    userName(){
-      return this.$store.state.userName
+    userCalledBinds() {
+      return this.$store.state.userCalledBinds;
     },
     isUsersTurn() {
-      return this.nowPlayingPlayer === this.userName;
+      return this.$store.getters.isUsersTurn;
     },
     bindingHintText() {
       return this.isUsersTurn ? "輪到你囉！" : "還沒輪到你～";
     },
     userBindingHint() {
       if (!this.isUsersTurn) return "X";
+      if (this.nowBind.number === 0 && !this.userNowPickedBind)
+        return "不能PASS!";
       if (!this.userNowPickedBind) return "PASS!";
       else
         return `喊${this.userNowPickedBind.number}${this.userNowPickedBind.suit}`;
@@ -144,6 +185,15 @@ export default {
     },
     nowPlayingPlayer() {
       return this.$store.state.nowPlayingPlayer;
+    },
+    nextPlayer() {
+      return this.$store.getters.nextPlayer;
+    },
+    userID() {
+      return this.$store.state.userID;
+    },
+    userIndex() {
+      return this.$store.state.userIndex;
     },
   },
 };
@@ -208,12 +258,19 @@ export default {
         .called_binds {
           min-height: 40px;
           padding: 5px;
+          letter-spacing: 2px;
           .binds {
             font-size: 14px;
             margin: 3px;
             &.passed {
               color: $pass_color;
               font-size: 16px;
+            }
+            &.red_suit{
+              color:$red_suit_color;
+            }
+            &.black_suit{
+              color:$black_suit_color;
             }
           }
         }

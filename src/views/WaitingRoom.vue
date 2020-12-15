@@ -82,12 +82,12 @@ export default {
       const nowPlayersArray = Object.entries(nowPlayers).map((a) => a[1].name);
       this.playerOrder = nowPlayersArray;
       //找到使用者是第幾個人
-      this.userOrdrerIndex = nowPlayersArray.indexOf(this.userName);
+      this.$store.commit('setUserIndex',nowPlayersArray.indexOf(this.userName))
       //找到使用者資料上的key
       const allUsersID = Object.entries(nowPlayers).map((a) => a[0]);
-      this.userID = allUsersID[this.userOrdrerIndex];
+      this.$store.commit('setUserID',allUsersID[this.userIndex]);
       //預設隊伍
-      if (this.userOrdrerIndex === 0 || this.userOrdrerIndex === 3) {
+      if (this.userIndex === 0 || this.userIndex === 3) {
         this.chosenTeam = "team1";
       } else {
         this.chosenTeam = "team2";
@@ -103,9 +103,7 @@ export default {
   },
   data() {
     return {
-      userID: "",
       playerOrder: [],
-      userOrdrerIndex: "",
       chosenTeam: "",
       team: [],
       showWaitingDialog: false,
@@ -144,6 +142,12 @@ export default {
     },
   },
   computed: {
+    userID(){
+      return this.$store.state.userID;
+    },
+    userIndex(){
+      return this.$store.state.userIndex;
+    },
     buttonMessage() {
       const team1 = this.team.filter((team) => team === "team1").length;
       const team2 = this.team.filter((team) => team === "team2").length;
