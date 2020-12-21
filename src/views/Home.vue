@@ -1,6 +1,11 @@
 <template>
   <div class="home">
-    <Logo />
+    <Admin
+      @reset-game="resetGame"
+      @close="showAdmin = false"
+      v-show="showAdmin"
+    />
+    <Logo @click="showAdmin = true" />
     <div class="user_input">
       <p>請輸入名字</p>
       <input v-model="userName" type="text" />
@@ -18,7 +23,8 @@
 
 <script>
 import db from "../db.js";
-import Logo from "@/components/Logo";
+import Logo from "@/components/Home/Logo.vue";
+import Admin from "@/components/Home/adminDialog.vue";
 export default {
   name: "Home",
   mounted() {
@@ -32,10 +38,12 @@ export default {
     return {
       userName: "",
       nowPlayersAmount: 0,
+      showAdmin: false,
     };
   },
   components: {
     Logo,
+    Admin,
   },
   computed: {
     message() {
@@ -61,6 +69,11 @@ export default {
         name: "WaitingRoom",
         params: { userName: this.userName },
       });
+    },
+    resetGame() {
+      const gameData = db.database().ref("/");
+      gameData.set({ nowPlayerAmount: 0 });
+      this.showAdmin = false;
     },
   },
 };

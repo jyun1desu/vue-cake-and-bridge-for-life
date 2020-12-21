@@ -17,6 +17,6 @@ git add -A
 git commit -m 'deploy'
 
 # if you are deploying to https://<USERNAME>.github.io
-git push -f https://github.com/jyun1desu/cake-and-bridge-for-life.git master:gh-pages
+git push -f git@github.com:jyun1desu/cake-and-bridge-for-life.git master:gh-pages
 
 cd -

@@ -14,7 +14,9 @@
         @continueGame="isOKtoGoOn = true"
         @restartGame="isOKtoGoOn = false"
       />
-      <BiddingDialog v-if="!hasTrump" />
+      <BiddingDialog 
+      @trump-is-decided="trumpIsDecided"
+      v-if="!hasTrump" />
       <ComfirmLeaveDialog
         @keepPlaying="showComfirmLeave = false"
         v-if="showComfirmLeave"
@@ -56,19 +58,19 @@
         <div class="players_info">
           <div class="top">
             <span class="team team1"></span>
-            <span class="name">{{ playersInfo[3].name }}</span>
+            <span class="name">{{ orderedPlayer.teammate.name }}</span>
           </div>
           <div class="left">
             <span class="team team2"></span>
-            <span class="name">{{ playersInfo[1].name }}</span>
+            <span class="name">{{ orderedPlayer.nextPlayer.name }}</span>
           </div>
           <div class="right">
             <span class="team team2"></span>
-            <span class="name">{{ playersInfo[2].name }}</span>
+            <span class="name">{{ orderedPlayer.previousPlayer.name }}</span>
           </div>
           <div class="bottom">
             <span class="team team1"></span>
-            <span class="name">{{ playersInfo[0].name }}</span>
+            <span class="name">{{orderedPlayer.user.name}}</span>
           </div>
         </div>
         <div class="played_cards">
@@ -246,6 +248,9 @@ export default {
     };
   },
   methods: {
+    trumpIsDecided(){
+      console.log()
+    },
     pickACard(pickedCard) {
       const haveTheSuit = this.hasRoundSuitCard(this.usersDeck);
       if (haveTheSuit && pickedCard.suit !== this.thisRoundSuit) return;
@@ -288,9 +293,6 @@ export default {
     },
   },
   computed: {
-    gameOrder() {
-      return this.$store.state.gameOrder;
-    },
     suitColor() {
       if (!this.hasTrump) return false;
       if (this.hasTrump.suit === "♦" || this.hasTrump.suit === "♥") {
@@ -334,6 +336,21 @@ export default {
     usersDeck() {
       return this.deck[2];
     },
+    userName(){
+      return this.$store.state.userName
+    },
+    orderedPlayer(){
+      const userIndex = this.playersInfo.findIndex(player=>player.name===this.userName)
+      const nextPlayer = userIndex+1>3?this.playersInfo[userIndex+1-4]:this.playersInfo[userIndex+1]
+      const teammate = userIndex+2>3?this.playersInfo[userIndex+2-4]:this.playersInfo[userIndex+2]
+      const previousPlayer = userIndex+3>3?this.playersInfo[userIndex+3-4]:this.playersInfo[userIndex+3]
+      return {
+        user: this.playersInfo[userIndex],
+        nextPlayer,
+        teammate,
+        previousPlayer
+      }
+    }
   },
   watch: {
     isOKtoGoOn(isOK) {

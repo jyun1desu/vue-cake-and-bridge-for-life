@@ -8,5 +8,8 @@ module.exports = {
           `
       }
     }
-  }
+  },
+  publicPath: process.env.NODE_ENV === 'production'
+  ? '/cake-and-bridge-for-life/'
+  : '/',
 };

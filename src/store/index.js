@@ -30,7 +30,6 @@ export default createStore({
     thisRoundOpeningLead: null,
     thisRoundSuit: '',
     userName: '',
-    nextPlayerName: '',
     players: [],
     wonTricks: [],
     userID: '',
@@ -62,8 +61,8 @@ export default createStore({
       state.gameInfo.trump = numberAndndSuit;
       state.nowPassedPlayer = 0
     },
-    playerPass(state) {
-      state.nowPassedPlayer++
+    playerPass(state,amount) {
+      state.nowPassedPlayer = amount
     },
     updateNowBinding(state, {
       who,

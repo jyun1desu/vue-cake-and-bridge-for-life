@@ -27,12 +27,12 @@
               :key="'player' + index + 'bind' + i"
               class="binds"
               :class="{
-                passed: bind === 'pass',
+                passed: bind === 'PASS',
                 red_suit: bind.suit === '♦' || bind.suit === '♥',
                 black_suit: bind.suit === '♣' || bind.suit === '♠',
               }"
             >
-              {{ bind.number+bind.suit }}
+              {{ bind.number + bind.suit || bind }}
             </p>
           </div>
         </div>
@@ -82,6 +82,8 @@ export default {
     const nowBind = db.database().ref("/nowCalledBind/");
     const nowPlayer = db.database().ref("/nowPlayer/");
     const players = db.database().ref("/playersInfo/");
+    const passedPlayer = db.database().ref("/nowPassedPlayerAmount/");
+    passedPlayer.set(0);
     nowBind.on("value", (d) => {
       const data = d.val();
       if (data) this.$store.commit("updateNowBinding", data);
@@ -93,11 +95,17 @@ export default {
     players.on("value", (d) => {
       const players = Object.entries(d.val()).map((a) => a[1]);
       const newPlayerInfo = this.playersInfo.map((player, index) => {
-        const data = players.filter(p=>p.name===player.name)[0]
+        const data = players.filter((p) => p.name === player.name)[0];
         return data;
       });
-      console.log(newPlayerInfo)
       this.$store.commit("setPlayersInfo", newPlayerInfo);
+    });
+    passedPlayer.on("value", (d) => {
+      const amount = d.val();
+      this.$store.commit("playerPass", amount);
+      if (this.passedPlayersAmount === 3) {
+        this.bindIsDecided();
+      }
     });
   },
   data() {
@@ -107,6 +115,7 @@ export default {
         trick: [1, 2, 3, 4],
         suit: ["♣", "♦", "♥", "♠"],
       },
+      userIsPassed: false,
     };
   },
   methods: {
@@ -124,22 +133,29 @@ export default {
       if (!this.isUsersTurn) return;
       if (this.nowBind.number === 0 && !this.userNowPickedBind) return;
       if (!this.userNowPickedBind) {
-        this.$store.commit("playerPass");
-        //更新上方框框裡的內容(待)
-        if (this.$store.state.nowPassedPlayer === 3) {
-          this.$store.commit("trumpDecide", this.$store.state.nowBinding.bind);
-          this.$store.commit("decideWinTricks");
-        }
+        const playersInfo = db.database().ref("/playersInfo/");
+        this.$store.commit("updateUserCalledBinds", "PASS");
+        playersInfo
+          .child(`player${this.userIndex + 1}`)
+          .child("calledBind")
+          .set(this.userCalledBinds);
+        this.userIsPassed = true;
+        //新增玩家PASS數量
+        this.$store.commit("playerPass", this.passedPlayersAmount + 1);
+        const database = db.database().ref("/");
+        database.child("nowPassedPlayerAmount").set(this.passedPlayersAmount);
+        //更新給下一個玩家
+        database.child("nowPlayer").set(this.nextPlayer);
       } else {
         //更新現在binding
         const data = {
           who: this.nowPlayingPlayer,
           numberAndSuit: this.userNowPickedBind,
         };
-        const nowBind = db.database().ref("/");
-        nowBind.child("nowCalledBind").update(data);
+        const database = db.database().ref("/");
+        database.child("nowCalledBind").update(data);
         //nowPlayer更新給user的下一家
-        nowBind.child("nowPlayer").set(this.nextPlayer);
+        database.child("nowPlayer").set(this.nextPlayer);
         //更新上方框框裡的內容(待)
         const playersInfo = db.database().ref("/playersInfo/");
         this.$store.commit("updateUserCalledBinds", this.userNowPickedBind);
@@ -150,6 +166,26 @@ export default {
         //初始user目前喊的王
         this.userNowPickedBind = "";
       }
+    },
+    bindIsDecided() {
+      this.$store.commit("trumpDecide", this.$store.state.nowBinding.bind);
+      this.$emit("trump-is-decided");
+      this.$store.commit("decideWinTricks");
+      const whoGotBind = this.$store.state.nowBinding.whoCalled;
+      const firstPlayer = this.nextPlayerName(whoGotBind);
+      this.$store.commit("assignFirstPlayer", firstPlayer);
+      const nowPlayer = db.database().ref("/nowPlayer/");
+      nowPlayer.set(firstPlayer);
+    },
+    nextPlayerName(nowPlayerName) {
+      const nowPlayerIndex = this.playersInfo.findIndex(
+        (player) => player.name === nowPlayerName
+      );
+      let nextPlayerIndex = nowPlayerIndex + 1;
+      if (nextPlayerIndex > 3) {
+        nextPlayerIndex = nextPlayerIndex - 4;
+      }
+      return this.playersInfo[nextPlayerIndex].name;
     },
   },
   computed: {
@@ -163,6 +199,7 @@ export default {
       return this.isUsersTurn ? "輪到你囉！" : "還沒輪到你～";
     },
     userBindingHint() {
+      if (this.userIsPassed) return "已經PASS啦";
       if (!this.isUsersTurn) return "X";
       if (this.nowBind.number === 0 && !this.userNowPickedBind)
         return "不能PASS!";
@@ -194,6 +231,17 @@ export default {
     },
     userIndex() {
       return this.$store.state.userIndex;
+    },
+    passedPlayersAmount() {
+      return this.$store.state.nowPassedPlayer;
+    },
+  },
+  watch: {
+    nowPlayingPlayer(value) {
+      if (value === this.$store.state.userName && this.userIsPassed) {
+        const nowBind = db.database().ref("/");
+        nowBind.child("nowPlayer").set(this.nextPlayer);
+      }
     },
   },
 };
@@ -266,11 +314,11 @@ export default {
               color: $pass_color;
               font-size: 16px;
             }
-            &.red_suit{
-              color:$red_suit_color;
+            &.red_suit {
+              color: $red_suit_color;
             }
-            &.black_suit{
-              color:$black_suit_color;
+            &.black_suit {
+              color: $black_suit_color;
             }
           }
         }
