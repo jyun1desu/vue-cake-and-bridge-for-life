@@ -14,9 +14,7 @@
         @continueGame="isOKtoGoOn = true"
         @restartGame="isOKtoGoOn = false"
       />
-      <BiddingDialog 
-      @trump-is-decided="trumpIsDecided"
-      v-if="!hasTrump" />
+      <BiddingDialog @trump-is-decided="trumpIsDecided" v-if="!hasTrump" />
       <ComfirmLeaveDialog
         @keepPlaying="showComfirmLeave = false"
         v-if="showComfirmLeave"
@@ -56,29 +54,106 @@
       </div>
       <div class="card_table">
         <div class="players_info">
-          <div class="top">
-            <span 
-            :class="{team1:usersTeam==='team1',team2:usersTeam==='team2'}"
-            class="team"></span>
+          <div
+            :class="{
+              now_player: nowPlayingPlayer === orderedPlayer.teammate.name,
+            }"
+            class="top"
+          >
+            <div
+              v-if="nowPlayingPlayer === orderedPlayer.teammate.name"
+              class="thinking"
+            >
+              <div class="dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+              </div>
+            </div>
+            <span
+              :class="{
+                team1: usersTeam === 'team1',
+                team2: usersTeam === 'team2',
+              }"
+              class="team"
+            ></span>
             <span class="name">{{ orderedPlayer.teammate.name }}</span>
           </div>
-          <div class="left">
-            <span 
-            :class="{team1:usersTeam!=='team1',team2:usersTeam!=='team2'}"
-            class="team"></span>
+          <div
+            :class="{
+              now_player: nowPlayingPlayer === orderedPlayer.nextPlayer.name,
+            }"
+            class="left"
+          >
+            <div
+              v-if="nowPlayingPlayer === orderedPlayer.nextPlayer.name"
+              class="thinking"
+            >
+              <div class="dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+              </div>
+            </div>
+            <span
+              :class="{
+                team1: usersTeam !== 'team1',
+                team2: usersTeam !== 'team2',
+              }"
+              class="team"
+            ></span>
             <span class="name">{{ orderedPlayer.nextPlayer.name }}</span>
           </div>
-          <div class="right">
-            <span 
-            :class="{team1:usersTeam!=='team1',team2:usersTeam!=='team2'}"
-            class="team"></span>
+          <div
+            :class="{
+              now_player:
+                nowPlayingPlayer === orderedPlayer.previousPlayer.name,
+            }"
+            class="right"
+          >
+            <div
+              v-if="nowPlayingPlayer === orderedPlayer.previousPlayer.name"
+              class="thinking"
+            >
+              <div class="dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+              </div>
+            </div>
+            <span
+              :class="{
+                team1: usersTeam !== 'team1',
+                team2: usersTeam !== 'team2',
+              }"
+              class="team"
+            ></span>
             <span class="name">{{ orderedPlayer.previousPlayer.name }}</span>
           </div>
-          <div class="bottom">
-            <span 
-            :class="{team1:usersTeam==='team1',team2:usersTeam==='team2'}"
-            class="team"></span>
-            <span class="name">{{orderedPlayer.user.name}}</span>
+          <div
+            :class="{
+              now_player: nowPlayingPlayer === orderedPlayer.user.name,
+            }"
+            class="bottom"
+          >
+                      <div
+              v-if="nowPlayingPlayer === orderedPlayer.user.name"
+              class="thinking"
+            >
+              <div class="dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+              </div>
+            </div>
+            <span
+              :class="{
+                team1: usersTeam === 'team1',
+                team2: usersTeam === 'team2',
+              }"
+              class="team"
+            ></span>
+            <span class="name">{{ orderedPlayer.user.name }}</span>
           </div>
         </div>
         <div class="played_cards">
@@ -256,8 +331,8 @@ export default {
     };
   },
   methods: {
-    trumpIsDecided(){
-      console.log()
+    trumpIsDecided() {
+      console.log();
     },
     pickACard(pickedCard) {
       const haveTheSuit = this.hasRoundSuitCard(this.usersDeck);
@@ -344,27 +419,39 @@ export default {
     usersDeck() {
       return this.deck[2];
     },
-    userName(){
-      return this.$store.state.userName
+    userName() {
+      return this.$store.state.userName;
     },
-    orderedPlayer(){
-      const userIndex = this.playersInfo.findIndex(player=>player.name===this.userName)
-      const nextPlayer = userIndex+1>3?this.playersInfo[userIndex+1-4]:this.playersInfo[userIndex+1]
-      const teammate = userIndex+2>3?this.playersInfo[userIndex+2-4]:this.playersInfo[userIndex+2]
-      const previousPlayer = userIndex+3>3?this.playersInfo[userIndex+3-4]:this.playersInfo[userIndex+3]
+    orderedPlayer() {
+      const userIndex = this.playersInfo.findIndex(
+        (player) => player.name === this.userName
+      );
+      const nextPlayer =
+        userIndex + 1 > 3
+          ? this.playersInfo[userIndex + 1 - 4]
+          : this.playersInfo[userIndex + 1];
+      const teammate =
+        userIndex + 2 > 3
+          ? this.playersInfo[userIndex + 2 - 4]
+          : this.playersInfo[userIndex + 2];
+      const previousPlayer =
+        userIndex + 3 > 3
+          ? this.playersInfo[userIndex + 3 - 4]
+          : this.playersInfo[userIndex + 3];
       return {
         user: this.playersInfo[userIndex],
         nextPlayer,
         teammate,
-        previousPlayer
-      }
+        previousPlayer,
+      };
     },
-    nowPlayingPlayer(){
-      return this.$store.state.nowPlayingPlayer
+    nowPlayingPlayer() {
+      return this.$store.state.nowPlayingPlayer || false;
     },
-    usersTeam(){
-      return this.playersInfo.find(player=>player.name===this.userName).team
-    }
+    usersTeam() {
+      return this.playersInfo.find((player) => player.name === this.userName)
+        .team;
+    },
   },
   watch: {
     isOKtoGoOn(isOK) {
@@ -520,6 +607,17 @@ export default {
         bottom: 0px;
         left: 50%;
         transform: translate(-50%, 50%);
+      }
+
+      &.now_player {
+        .team {
+          border: 2px solid $highlight_color;
+          border-right: none;
+        }
+        .name {
+          border: 2px solid $highlight_color;
+          border-left: none;
+        }
       }
 
       .team {
@@ -729,6 +827,73 @@ export default {
     @include button_style;
     margin-bottom: 10px;
     font-size: 14px;
+  }
+}
+
+.thinking {
+  position: absolute;
+  background-color: #fff;
+  border-radius: 3px;
+  transform: translate(-50%, -150%);
+  padding: 8px;
+  left: 50%;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  filter: drop-shadow(0px 0px 2px rgb(170, 170, 170));
+  // box-shadow: 0px 0px 3px 1px rgb(196, 196, 196);
+
+  &::after {
+    content: "";
+    position: absolute;
+    display: block;
+    background-color: #fff;
+    width: 6px;
+    height: 6px;
+    transform-origin: top right;
+    transform: rotate(45deg);
+    top: 100%;
+  }
+
+  .dots {
+    display: flex;
+    .dot {
+      height: 4px;
+      width: 4px;
+      border-radius: 50%;
+      background-color: $black_suit_color;
+
+      animation: animateDot 2s cubic-bezier(0.69, 0.76, 0.58, 1);
+      animation-iteration-count: infinite;
+      &:nth-child(1) {
+        animation-delay: 0s;
+      }
+      &:nth-child(2) {
+        margin: 0 4px;
+        animation-delay: 0.3s;
+      }
+
+      &:nth-child(3) {
+        animation-delay: 0.5s;
+      }
+    }
+  }
+}
+
+@keyframes animateDot {
+  0% {
+    transform: translate3d(0);
+  }
+  25% {
+    transform: translate3d(0, -1.5px, 0);
+  }
+  50% {
+    transform: translate3d(0, 0.5px, 0);
+  }
+  65%,
+  100% {
+    transform: translate3d(0, 0, 0);
   }
 }
 </style>

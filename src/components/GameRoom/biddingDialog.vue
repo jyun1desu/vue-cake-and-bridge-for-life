@@ -202,6 +202,7 @@ export default {
       return this.$store.getters.isUsersTurn;
     },
     bindingHintText() {
+      if(this.userIsPassed) return '已經PASS囉！'
       return this.isUsersTurn ? "輪到你囉！" : "還沒輪到你～";
     },
     userBindingHint() {
