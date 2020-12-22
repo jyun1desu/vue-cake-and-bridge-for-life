@@ -4,7 +4,7 @@
 
 <style lang="scss">
 * {
-  font-family: $main_font_family;
+  // font-family: $main_font_family;
   user-select: none;
 }
 body,
