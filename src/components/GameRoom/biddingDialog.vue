@@ -253,7 +253,7 @@ export default {
   align-items: flex-start;
   .dialog {
     margin-top: 20px;
-    width: 80vw;
+    width: 87vw;
     background-color: $theme_background;
     border-radius: 5px;
     overflow: hidden;
@@ -271,7 +271,7 @@ export default {
       margin: 10px;
       .player {
         & + .player {
-          margin-left: 7px;
+          margin-left: 5px;
         }
         flex: 0 1 25%;
         text-align: center;
@@ -312,7 +312,7 @@ export default {
             margin: 3px;
             &.passed {
               color: $pass_color;
-              font-size: 16px;
+              font-size: 13px;
             }
             &.red_suit {
               color: $red_suit_color;

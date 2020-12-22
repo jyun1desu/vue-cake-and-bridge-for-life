@@ -57,19 +57,27 @@
       <div class="card_table">
         <div class="players_info">
           <div class="top">
-            <span class="team team1"></span>
+            <span 
+            :class="{team1:usersTeam==='team1',team2:usersTeam==='team2'}"
+            class="team"></span>
             <span class="name">{{ orderedPlayer.teammate.name }}</span>
           </div>
           <div class="left">
-            <span class="team team2"></span>
+            <span 
+            :class="{team1:usersTeam!=='team1',team2:usersTeam!=='team2'}"
+            class="team"></span>
             <span class="name">{{ orderedPlayer.nextPlayer.name }}</span>
           </div>
           <div class="right">
-            <span class="team team2"></span>
+            <span 
+            :class="{team1:usersTeam!=='team1',team2:usersTeam!=='team2'}"
+            class="team"></span>
             <span class="name">{{ orderedPlayer.previousPlayer.name }}</span>
           </div>
           <div class="bottom">
-            <span class="team team1"></span>
+            <span 
+            :class="{team1:usersTeam==='team1',team2:usersTeam==='team2'}"
+            class="team"></span>
             <span class="name">{{orderedPlayer.user.name}}</span>
           </div>
         </div>
@@ -350,6 +358,12 @@ export default {
         teammate,
         previousPlayer
       }
+    },
+    nowPlayingPlayer(){
+      return this.$store.state.nowPlayingPlayer
+    },
+    usersTeam(){
+      return this.playersInfo.find(player=>player.name===this.userName).team
     }
   },
   watch: {
