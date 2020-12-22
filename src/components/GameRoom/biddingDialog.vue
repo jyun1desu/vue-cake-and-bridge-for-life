@@ -145,7 +145,13 @@ export default {
         const database = db.database().ref("/");
         database.child("nowPassedPlayerAmount").set(this.passedPlayersAmount);
         //更新給下一個玩家
-        database.child("nowPlayer").set(this.nextPlayer);
+        const passedPlayer = db.database().ref("/nowPassedPlayerAmount/");
+        passedPlayer.once("value", (d) => {
+          const amount = d.val();
+          if (this.passedPlayersAmount !== 3) {
+            database.child("nowPlayer").set(this.nextPlayer);
+          }
+        });
       } else {
         //更新現在binding
         const data = {
