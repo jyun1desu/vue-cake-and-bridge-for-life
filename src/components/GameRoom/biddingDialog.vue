@@ -100,6 +100,7 @@ export default {
       });
       this.$store.commit("setPlayersInfo", newPlayerInfo);
     });
+    //pass玩家超過三人，即產生王牌
     passedPlayer.on("value", (d) => {
       const amount = d.val();
       this.$store.commit("playerPass", amount);
@@ -130,8 +131,9 @@ export default {
       }
     },
     callTheBind() {
-      if (!this.isUsersTurn) return;
-      if (this.nowBind.number === 0 && !this.userNowPickedBind) return;
+      if (!this.isUsersTurn) return; //還沒輪到玩家
+      if (this.nowBind.number === 0 && !this.userNowPickedBind) return; //第一位玩家不能pass
+      //玩家pass的情況
       if (!this.userNowPickedBind) {
         const playersInfo = db.database().ref("/playersInfo/");
         this.$store.commit("updateUserCalledBinds", "PASS");
@@ -144,7 +146,7 @@ export default {
         this.$store.commit("playerPass", this.passedPlayersAmount + 1);
         const database = db.database().ref("/");
         database.child("nowPassedPlayerAmount").set(this.passedPlayersAmount);
-        //更新給下一個玩家
+        //如果pass人數還不達三人，輪到下一個玩家喊王
         const passedPlayer = db.database().ref("/nowPassedPlayerAmount/");
         passedPlayer.once("value", (d) => {
           const amount = d.val();
@@ -175,7 +177,6 @@ export default {
     },
     bindIsDecided() {
       this.$store.commit("trumpDecide", this.$store.state.nowBinding.bind);
-      this.$emit("trump-is-decided");
       this.$store.commit("decideWinTricks");
       const whoGotBind = this.$store.state.nowBinding.whoCalled;
       const firstPlayer = this.nextPlayerName(whoGotBind);

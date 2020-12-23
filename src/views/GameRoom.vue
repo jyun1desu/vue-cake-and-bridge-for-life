@@ -14,7 +14,7 @@
         @continueGame="isOKtoGoOn = true"
         @restartGame="isOKtoGoOn = false"
       />
-      <BiddingDialog @trump-is-decided="trumpIsDecided" v-if="!hasTrump" />
+      <BiddingDialog v-if="!hasTrump" />
       <ComfirmLeaveDialog
         @keepPlaying="showComfirmLeave = false"
         v-if="showComfirmLeave"
@@ -331,9 +331,6 @@ export default {
     };
   },
   methods: {
-    trumpIsDecided() {
-      console.log();
-    },
     pickACard(pickedCard) {
       const haveTheSuit = this.hasRoundSuitCard(this.usersDeck);
       if (haveTheSuit && pickedCard.suit !== this.thisRoundSuit) return;
