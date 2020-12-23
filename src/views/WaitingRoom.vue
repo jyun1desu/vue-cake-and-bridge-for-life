@@ -82,10 +82,13 @@ export default {
       const nowPlayersArray = Object.entries(nowPlayers).map((a) => a[1].name);
       this.playerOrder = nowPlayersArray;
       //找到使用者是第幾個人
-      this.$store.commit('setUserIndex',nowPlayersArray.indexOf(this.userName))
+      this.$store.commit(
+        "setUserIndex",
+        nowPlayersArray.indexOf(this.userName)
+      );
       //找到使用者資料上的key
       const allUsersID = Object.entries(nowPlayers).map((a) => a[0]);
-      this.$store.commit('setUserID',allUsersID[this.userIndex]);
+      this.$store.commit("setUserID", allUsersID[this.userIndex]);
       //預設隊伍
       if (this.userIndex === 0 || this.userIndex === 3) {
         this.chosenTeam = "team1";
@@ -128,6 +131,7 @@ export default {
       userInfo.update({ OKtoPlay: true });
       this.showWaitingDialog = true;
 
+      //enter時全部人都已經同意時，隨機指派第一個玩家、洗牌發牌
       const playerInfo = Array.from(this.playerOrder).map((player, index) => {
         return {
           name: player,
@@ -137,15 +141,26 @@ export default {
       const team1 = playerInfo.filter((player) => player.team === "team1");
       const team2 = playerInfo.filter((player) => player.team === "team2");
       const orderArray = [team1[0], team2[0], team1[1], team2[1]];
-      this.$store.commit('setPlayersInfo',orderArray)
-      this.$store.commit('assignFirstPlayer',orderArray[0].name)
+      this.$store.commit("setPlayersInfo", orderArray);
+      //
+      const nowPlayers = db.database().ref("/playersInfo");
+      nowPlayers.once("value", (data) => {
+        const nowPlayers = data.val();
+        const OKtoGo = Object.entries(nowPlayers).map((a) => a[1].OKtoPlay);
+        const OKAmount = Array.from(OKtoGo).filter((answer) => answer === true)
+          .length;
+        if (OKAmount === 4) {
+          this.$store.commit("assignFirstPlayer", this.userName);
+          db.database().ref("/nowPlayer/").set(this.userName);
+        }
+      });
     },
   },
   computed: {
-    userID(){
+    userID() {
       return this.$store.state.userID;
     },
-    userIndex(){
+    userIndex() {
       return this.$store.state.userIndex;
     },
     buttonMessage() {
