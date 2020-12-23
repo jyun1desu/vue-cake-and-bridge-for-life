@@ -7,12 +7,10 @@ export default createStore({
     gameInfo: {
       trump: null,
       team: [{
-          members: [],
           nowWin: 0,
           shouldWin: 7,
         },
         {
-          members: [],
           nowWin: 0,
           shouldWin: 7,
         }
@@ -103,6 +101,13 @@ export default createStore({
     switchToNextPlayer(state,player) {
       state.nowPlayingPlayer = player
     },
+    addTeamScore(state,teamIndex){
+      const winTeam = state.gameInfo.team[teamIndex];
+      winTeam.nowWin++
+    },
+    updataWonTricks(state,cards){
+      state.wonTricks.push(cards)
+    }
   },
   actions: {},
   modules: {}

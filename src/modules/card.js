@@ -80,4 +80,3 @@ function playCard(played,playerDeck){
 };
 
 const shuffledDeck = shuffle(buildNewDeck())
-console.log(dealCards(4,shuffledDeck))

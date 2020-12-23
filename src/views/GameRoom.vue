@@ -9,12 +9,12 @@
       :class="{ half_seen: showWonTricks || showSettings }"
       class="game"
     >
+      <BiddingDialog v-if="!hasTrump" />
       <GiveUpThisDeckDialog
         v-if="dealDone && badLuck && !isOKtoGoOn"
         @continueGame="isOKtoGoOn = true"
         @restartGame="isOKtoGoOn = false"
       />
-      <BiddingDialog v-if="!hasTrump" />
       <ComfirmLeaveDialog
         @keepPlaying="showComfirmLeave = false"
         v-if="showComfirmLeave"
@@ -136,7 +136,7 @@
             }"
             class="bottom"
           >
-                      <div
+            <div
               v-if="nowPlayingPlayer === orderedPlayer.user.name"
               class="thinking"
             >
@@ -157,9 +157,23 @@
           </div>
         </div>
         <div class="played_cards">
-          <UserCard class="card top" :card="userPlayedCard" v-if="false" />
-          <UserCard class="card left" :card="userPlayedCard" v-if="false" />
-          <UserCard class="card right" :card="userPlayedCard" v-if="false" />
+          <UserCard
+            class="card top"
+            :card="thisRoundCard[orderedPlayer.teammate.name]"
+            v-if="thisRoundCard.hasOwnProperty(orderedPlayer.teammate.name)"
+          />
+          <UserCard
+            class="card left"
+            :card="thisRoundCard[orderedPlayer.nextPlayer.name]"
+            v-if="thisRoundCard.hasOwnProperty(orderedPlayer.nextPlayer.name)"
+          />
+          <UserCard
+            class="card right"
+            :card="thisRoundCard[orderedPlayer.previousPlayer.name]"
+            v-if="
+              thisRoundCard.hasOwnProperty(orderedPlayer.previousPlayer.name)
+            "
+          />
           <UserCard
             class="card bottom user"
             v-if="userPlayedCard"
@@ -185,14 +199,14 @@
             <div class="team team1">
               <span class="team__name"></span>
               <span class="team__tricks">
-                <span class="now_win">0</span>
+                <span class="now_win">{{ teamOneInfo.nowWin }}</span>
                 <span class="should_win">/{{ teamOneInfo.shouldWin }}</span>
               </span>
             </div>
             <div class="team team2">
               <span class="team__name"></span>
               <span class="team__tricks">
-                <span class="now_win">0</span>
+                <span class="now_win">{{ teamTwoInfo.nowWin }}</span>
                 <span class="should_win">/{{ teamTwoInfo.shouldWin }}</span>
               </span>
             </div>
@@ -243,6 +257,7 @@
 </template>
 
 <script>
+import db from "../db.js";
 import UserCard from "../components/GameRoom/UserCard.vue";
 import GiveUpThisDeckDialog from "../components/GameRoom/giveUpThisDeckDialog.vue";
 import BiddingDialog from "../components/GameRoom/biddingDialog.vue";
@@ -257,70 +272,58 @@ export default {
     ComfirmLeaveDialog,
     WonTricksBox,
   },
+  mounted() {
+    const nowPlayer = db.database().ref("/nowPlayer/");
+    nowPlayer.on("value", (data) => {
+      this.$store.commit("switchToNextPlayer", data.val());
+    });
+    const deck = db.database().ref("/deck/");
+    deck.on("value", (data) => {
+      this.deck = data.val();
+      this.usersDeck = this.deck[this.userIndex];
+    });
+    const thisRoundSuit = db.database().ref("/thisRoundSuit/");
+    thisRoundSuit.on("value", (data) => {
+      const suit = data.val();
+      this.$store.commit("assignThisRoundSuit", suit);
+    });
+    const thisRoundCard = db.database().ref("/thisRoundCard/");
+    thisRoundCard.on("value", (data) => {
+      const cards = data.val();
+      if (cards) {
+        this.thisRoundCard = cards;
+      }
+      //檯面上有四張牌
+      if (cards && Object.keys(cards).length === 4) {
+        const cardsArray = Object.values(cards);
+        const wonCard = this.highCard(
+          this.hasTrump,
+          this.thisRoundSuit,
+          cardsArray
+        );
+        const wonCardIndex = cardsArray.findIndex((card) => card === wonCard);
+        const wonPlayer = Object.keys(cards)[wonCardIndex];
+        //贏家收這墩
+        if (wonPlayer === this.userName) {
+          this.$store.commit("updataWonTricks", cardsArray);
+        }
+        //清空牌桌，指定下一個贏家
+        this.initRound = setTimeout(() => {
+          this.clearCardTable();
+          //贏的隊加一分
+          this.winThisRound(wonPlayer);
+          this.$store.commit("assignFirstPlayer", wonPlayer);
+          const nowPlayer = db.database().ref("/nowPlayer/");
+          nowPlayer.set(wonPlayer);
+        }, 2500);
+      }
+    });
+  },
   data() {
     return {
-      deck: [
-        [
-          { suit: "spades", number: 1 },
-          { suit: "spades", number: 3 },
-          { suit: "spades", number: 5 },
-          { suit: "spades", number: 6 },
-          { suit: "spades", number: 9 },
-          { suit: "club", number: 5 },
-          { suit: "club", number: 8 },
-          { suit: "club", number: 9 },
-          { suit: "club", number: 13 },
-          { suit: "diamond", number: 5 },
-          { suit: "diamond", number: 6 },
-          { suit: "diamond", number: 12 },
-          { suit: "diamond", number: 13 },
-        ],
-        [
-          { suit: "heart", number: 3 },
-          { suit: "heart", number: 4 },
-          { suit: "heart", number: 5 },
-          { suit: "heart", number: 7 },
-          { suit: "heart", number: 10 },
-          { suit: "heart", number: 12 },
-          { suit: "club", number: 2 },
-          { suit: "club", number: 7 },
-          { suit: "club", number: 10 },
-          { suit: "diamond", number: 1 },
-          { suit: "diamond", number: 7 },
-          { suit: "diamond", number: 9 },
-          { suit: "diamond", number: 10 },
-        ],
-        [
-          { suit: "spades", number: 2 },
-          { suit: "spades", number: 4 },
-          { suit: "spades", number: 10 },
-          { suit: "spades", number: 11 },
-          { suit: "heart", number: 1 },
-          { suit: "heart", number: 6 },
-          { suit: "heart", number: 8 },
-          { suit: "heart", number: 11 },
-          { suit: "club", number: 3 },
-          { suit: "club", number: 4 },
-          { suit: "club", number: 12 },
-          { suit: "diamond", number: 3 },
-          { suit: "diamond", number: 8 },
-        ],
-        [
-          { suit: "spades", number: 7 },
-          { suit: "spades", number: 8 },
-          { suit: "spades", number: 9 },
-          { suit: "spades", number: 1 },
-          { suit: "heart", number: 2 },
-          { suit: "heart", number: 9 },
-          { suit: "heart", number: 1 },
-          { suit: "club", number: 1 },
-          { suit: "club", number: 6 },
-          { suit: "club", number: 1 },
-          { suit: "diamond", number: 2 },
-          { suit: "diamond", number: 4 },
-          { suit: "diamond", number: 1 },
-        ],
-      ],
+      deck: [],
+      usersDeck: [],
+      thisRoundCard: {},
       dealDone: true,
       nowPickSuit: null,
       isOKtoGoOn: null,
@@ -331,7 +334,58 @@ export default {
     };
   },
   methods: {
+    clearCardTable() {
+      this.userPlayedCard = "";
+      this.thisRoundCard = {};
+      this.$store.commit("assignThisRoundSuit", "");
+      const thisRoundCard = db.database().ref("/thisRoundCard/");
+      const thisRoundSuit = db.database().ref("/thisRoundSuit/");
+      thisRoundCard.set({});
+      thisRoundSuit.set('');
+    },
+    winThisRound(wonPlayer) {
+      const team = this.playersInfo.find((player) => {
+        return player.name === wonPlayer;
+      }).team;
+      this.addTeamScore(team);
+    },
+    addTeamScore(team) {
+      switch (team) {
+        case "team1":
+          this.$store.commit("addTeamScore", 0);
+          break;
+        case "team2":
+          this.$store.commit("addTeamScore", 1);
+          break;
+      }
+    },
+    countPoint(trump, nowSuit, card) {
+      const trumpInEngilsh = [
+        { english: "spades", pattern: "♠" },
+        { english: "heart", pattern: "♥" },
+        { english: "diamond", pattern: "♦" },
+        { english: "club", pattern: "♣" },
+      ].find((item) => item.pattern === trump.suit).english;
+      let point = 0;
+      if (card.suit === trumpInEngilsh) {
+        point += 20;
+      }
+      if (card.suit !== trumpInEngilsh && card.suit !== nowSuit) {
+        point -= 20;
+      }
+      point += card.number;
+      return point;
+    },
+    highCard(trump, nowSuit, cards) {
+      const point = cards.map((card) => {
+        const point = this.countPoint(trump, nowSuit, card);
+        return point;
+      });
+      const winnerIndex = point.indexOf(Math.max(...point));
+      return cards[winnerIndex];
+    },
     pickACard(pickedCard) {
+      if (this.nowPlayingPlayer !== this.userName) return;
       const haveTheSuit = this.hasRoundSuitCard(this.usersDeck);
       if (haveTheSuit && pickedCard.suit !== this.thisRoundSuit) return;
       if (this.nowPickSuit === pickedCard.suit) {
@@ -348,8 +402,27 @@ export default {
       const cardIndex = this.usersDeck.indexOf(card);
       this.usersDeck.splice(cardIndex, 1);
       this.userPlayedCard = card;
-      if (!this.thisRoundSuit)
+      if (!this.thisRoundSuit) {
+        //如果user是第一個出牌者，出牌花色等於這局指定花色
         this.$store.commit("assignThisRoundSuit", card.suit);
+        const thisRoundSuit = db.database().ref("/thisRoundSuit/");
+        thisRoundSuit.set(card.suit);
+      }
+      //轉移給user的下一個玩家
+      const thisRoundCard = db.database().ref("/thisRoundCard/");
+      //將user出的牌更新給其他玩家
+      thisRoundCard.child(this.userName).set(card);
+      thisRoundCard.once("value", (data) => {
+        const cardAmount = Object.keys(data.val()).length;
+        const nowPlayer = db.database().ref("/nowPlayer/");
+        if (cardAmount !== 4) {
+          this.$store.commit("switchToNextPlayer", this.nextPlayer);
+          nowPlayer.set(this.nextPlayer);
+        } else {
+          this.$store.commit("switchToNextPlayer", "");
+          nowPlayer.set("");
+        }
+      });
     },
     hasRoundSuitCard(deck = []) {
       const shouldPlaySuit = this.thisRoundSuit;
@@ -373,6 +446,9 @@ export default {
     },
   },
   computed: {
+    nextPlayer() {
+      return this.$store.getters.nextPlayer;
+    },
     suitColor() {
       if (!this.hasTrump) return false;
       if (this.hasTrump.suit === "♦" || this.hasTrump.suit === "♥") {
@@ -413,9 +489,6 @@ export default {
     thisRoundSuit() {
       return this.$store.state.thisRoundSuit;
     },
-    usersDeck() {
-      return this.deck[2];
-    },
     userName() {
       return this.$store.state.userName;
     },
@@ -448,6 +521,9 @@ export default {
     usersTeam() {
       return this.playersInfo.find((player) => player.name === this.userName)
         .team;
+    },
+    userIndex() {
+      return this.$store.state.userIndex;
     },
   },
   watch: {
