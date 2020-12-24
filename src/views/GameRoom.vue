@@ -24,21 +24,21 @@
         <div class="player player__cross">
           <div
             class="card"
-            v-for="card in deck[0]"
+            v-for="card in teammateDeck"
             :key="card.suit + card.number"
           ></div>
         </div>
         <div class="player player__left">
           <div
             class="card"
-            v-for="card in deck[1]"
+            v-for="card in nextPlayerDeck"
             :key="card.suit + card.number"
           ></div>
         </div>
         <div class="player player__right">
           <div
             class="card"
-            v-for="card in deck[3]"
+            v-for="card in previousPlayerDeck"
             :key="card.suit + card.number"
           ></div>
         </div>
@@ -284,6 +284,9 @@ export default {
     deck.on("value", (data) => {
       this.deck = data.val();
       this.usersDeck = this.deck[this.userIndex];
+      this.nextPlayerDeck = this.deck[this.userIndex+1>3?this.userIndex-3:this.userIndex+1];
+      this.teammateDeck = this.deck[this.userIndex+2>3?this.userIndex-2:this.userIndex+2];
+      this.previousPlayerDeck = this.deck[this.userIndex+3>3?this.userIndex-1:this.userIndex+3];
     });
     const thisRoundSuit = db.database().ref("/thisRoundSuit/");
     thisRoundSuit.on("value", (data) => {
@@ -326,6 +329,9 @@ export default {
     return {
       deck: [],
       usersDeck: [],
+      nextPlayerDeck:[],
+      teammateDeck:[],
+      previousPlayerDeck:[],
       thisRoundCard: {},
       dealDone: true,
       gameResult: "激戰中",
@@ -457,6 +463,21 @@ export default {
         return false;
       }
     },
+    minusOneCard(player){
+      const playerIndex = Object.values(this.orderedPlayer).findIndex(p=>p.name===player)
+      const playerPosition = Object.keys(this.orderedPlayer)[playerIndex]
+      switch(playerPosition){
+        case 'nextPlayer':
+          this.nextPlayerDeck.splice(0,1);
+          break;
+        case 'teammate':
+          this.teammateDeck.splice(0,1);
+          break;
+        case 'previousPlayer':
+          this.previousPlayerDeck.splice(0,1);
+          break;
+      }
+    }
   },
   computed: {
     nextPlayer() {
@@ -557,10 +578,16 @@ export default {
       },
       deep: true,
     },
-    // thisRoundCard(newValue,oldValue){
-    //   console.log(newValue)
-    //   console.log(oldValue)
-    // }
+    thisRoundCard(newValue, oldValue) {
+      const nowPlayed = Object.keys(newValue);
+      const lastPlayed = Object.keys(oldValue);
+      const lastTimePlayer = nowPlayed.filter((player) => {
+        return !lastPlayed.includes(player);
+      })[0];
+      if (lastTimePlayer&&lastTimePlayer!==this.userName) {
+        this.minusOneCard(lastTimePlayer);
+      }
+    },
   },
 };
 </script>
