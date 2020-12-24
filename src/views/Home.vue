@@ -1,5 +1,6 @@
 <template>
   <div class="home">
+    <ResultBox :game-result="gameResult" />
     <Admin
       @reset-game="resetGame"
       @close="showAdmin = false"
@@ -25,6 +26,7 @@
 import db from "../db.js";
 import Logo from "@/components/Home/Logo.vue";
 import Admin from "@/components/Home/adminDialog.vue";
+import ResultBox from "../components/GameRoom/resultDialog.vue";
 export default {
   name: "Home",
   mounted() {
@@ -42,6 +44,7 @@ export default {
     };
   },
   components: {
+    ResultBox,
     Logo,
     Admin,
   },

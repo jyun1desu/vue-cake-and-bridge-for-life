@@ -15,6 +15,7 @@
         @continueGame="isOKtoGoOn = true"
         @restartGame="isOKtoGoOn = false"
       />
+      <ResultBox :game-result="gameResult" />
       <ComfirmLeaveDialog
         @keepPlaying="showComfirmLeave = false"
         v-if="showComfirmLeave"
@@ -263,6 +264,7 @@ import GiveUpThisDeckDialog from "../components/GameRoom/giveUpThisDeckDialog.vu
 import BiddingDialog from "../components/GameRoom/biddingDialog.vue";
 import ComfirmLeaveDialog from "../components/GameRoom/leaveGameDialog.vue";
 import WonTricksBox from "../components/GameRoom/wonTricks.vue";
+import ResultBox from "../components/GameRoom/resultDialog.vue";
 export default {
   name: "GameRoom",
   components: {
@@ -271,6 +273,7 @@ export default {
     BiddingDialog,
     ComfirmLeaveDialog,
     WonTricksBox,
+    ResultBox,
   },
   mounted() {
     const nowPlayer = db.database().ref("/nowPlayer/");
@@ -325,6 +328,7 @@ export default {
       usersDeck: [],
       thisRoundCard: {},
       dealDone: true,
+      gameResult: "激戰中",
       nowPickSuit: null,
       isOKtoGoOn: null,
       userPlayedCard: "",
@@ -341,7 +345,7 @@ export default {
       const thisRoundCard = db.database().ref("/thisRoundCard/");
       const thisRoundSuit = db.database().ref("/thisRoundSuit/");
       thisRoundCard.set({});
-      thisRoundSuit.set('');
+      thisRoundSuit.set("");
     },
     winThisRound(wonPlayer) {
       const team = this.playersInfo.find((player) => {
@@ -444,6 +448,15 @@ export default {
       //將使用者導向home,其他人導向等待室
       console.log("掰");
     },
+    isWin(teamInfo) {
+      const nowWin = teamInfo.nowWin;
+      const shouldWin = teamInfo.shouldWin;
+      if (nowWin >= shouldWin) {
+        return true;
+      } else {
+        return false;
+      }
+    },
   },
   computed: {
     nextPlayer() {
@@ -466,7 +479,7 @@ export default {
             const point = b > 9 ? b - 9 : 0;
             return a + point;
           }, 0);
-        return deckPoint > 4 ? false : true;
+        return deckPoint > 3 ? false : true;
       } else {
         return false;
       }
@@ -530,6 +543,25 @@ export default {
     isOKtoGoOn(isOK) {
       if (!isOK) this.restartGame();
     },
+    gameInfo: {
+      handler: function (value) {
+        const team1 = value.team[0];
+        const team2 = value.team[1];
+
+        if (this.isWin(team1)) {
+          this.gameResult = "草莓糕贏啦！";
+        }
+        if (this.isWin(team2)) {
+          this.gameResult = "可麗露贏啦！";
+        }
+        console.log(this.gameResult);
+      },
+      deep: true,
+    },
+    // thisRoundCard(newValue,oldValue){
+    //   console.log(newValue)
+    //   console.log(oldValue)
+    // }
   },
 };
 </script>
