@@ -352,8 +352,8 @@ button {
   &.start_game {
     font-size: 25px;
     background-color: $button_color;
-    margin-top: auto;
-    margin-bottom: 30px;
+    margin-top: 30px;
+    margin-bottom: auto;
 
     &.warn {
       font-size: 20px;

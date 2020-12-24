@@ -8,7 +8,10 @@
     <Logo @click="showAdmin = true" />
     <div class="user_input">
       <p>請輸入名字</p>
-      <input v-model="userName" type="text"/>
+      <input 
+      v-model="userName"
+      placeholder="hello"
+      type="text"/>
       <button
         @click="enterGame"
         :class="{ novacancy: nowPlayersAmount === 4 }"
