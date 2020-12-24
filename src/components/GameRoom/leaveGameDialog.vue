@@ -15,6 +15,7 @@ export default {
   name: "comfirmLeaveDialog",
   methods: {
     leaveGame() {
+      this.$emit("player-leave");
       this.$router.push({
         name: "Home",
       });

@@ -17,6 +17,7 @@
       />
       <ResultBox v-if="gameResult !== '激戰中'" :game-result="gameResult" />
       <ComfirmLeaveDialog
+        @player-leave="leadAllPlayersLeave"
         @keepPlaying="showComfirmLeave = false"
         v-if="showComfirmLeave"
       />
@@ -222,7 +223,15 @@
 
     <div :class="{ show: showSettings }" class="settings">
       <button @click="backToWaitingRoom" class="change_mate">更換隊友</button>
-      <button @click="leaveGame" class="exit">離開遊戲</button>
+      <button
+        @click="
+          showComfirmLeave = true;
+          showSettings = false;
+        "
+        class="exit"
+      >
+        離開遊戲
+      </button>
     </div>
 
     <div
@@ -284,9 +293,15 @@ export default {
     deck.on("value", (data) => {
       this.deck = data.val();
       this.usersDeck = this.deck[this.userIndex];
-      this.nextPlayerDeck = this.deck[this.userIndex+1>3?this.userIndex-3:this.userIndex+1];
-      this.teammateDeck = this.deck[this.userIndex+2>3?this.userIndex-2:this.userIndex+2];
-      this.previousPlayerDeck = this.deck[this.userIndex+3>3?this.userIndex-1:this.userIndex+3];
+      this.nextPlayerDeck = this.deck[
+        this.userIndex + 1 > 3 ? this.userIndex - 3 : this.userIndex + 1
+      ];
+      this.teammateDeck = this.deck[
+        this.userIndex + 2 > 3 ? this.userIndex - 2 : this.userIndex + 2
+      ];
+      this.previousPlayerDeck = this.deck[
+        this.userIndex + 3 > 3 ? this.userIndex - 1 : this.userIndex + 3
+      ];
     });
     const thisRoundSuit = db.database().ref("/thisRoundSuit/");
     thisRoundSuit.on("value", (data) => {
@@ -324,14 +339,26 @@ export default {
         }, 2500);
       }
     });
+    const someoneLeave = db.database().ref("/someoneLeave/");
+    someoneLeave.on("value", (data) => {
+      const isAny = data.val();
+      if (isAny) {
+        //送大家離開囉～
+        this.leadToHome = setTimeout(() => {
+          this.$router.push({
+            name: "Home",
+          });
+        }, 5000);
+      }
+    });
   },
   data() {
     return {
       deck: [],
       usersDeck: [],
-      nextPlayerDeck:[],
-      teammateDeck:[],
-      previousPlayerDeck:[],
+      nextPlayerDeck: [],
+      teammateDeck: [],
+      previousPlayerDeck: [],
       thisRoundCard: {},
       dealDone: true,
       gameResult: "激戰中",
@@ -447,12 +474,9 @@ export default {
       //將所有人導向等待室
       console.log("換！");
     },
-    leaveGame() {
-      this.showComfirmLeave = true;
-      this.showSettings = false;
-      //向所有人發送：有人離開了，3秒後導向等待室...
-      //將使用者導向home,其他人導向等待室
-      console.log("掰");
+    leadAllPlayersLeave() {
+      const someoneLeave = db.database().ref("/someoneLeave/");
+      someoneLeave.set(true);
     },
     isWin(teamInfo) {
       const nowWin = teamInfo.nowWin;
@@ -463,21 +487,23 @@ export default {
         return false;
       }
     },
-    minusOneCard(player){
-      const playerIndex = Object.values(this.orderedPlayer).findIndex(p=>p.name===player)
-      const playerPosition = Object.keys(this.orderedPlayer)[playerIndex]
-      switch(playerPosition){
-        case 'nextPlayer':
-          this.nextPlayerDeck.splice(0,1);
+    minusOneCard(player) {
+      const playerIndex = Object.values(this.orderedPlayer).findIndex(
+        (p) => p.name === player
+      );
+      const playerPosition = Object.keys(this.orderedPlayer)[playerIndex];
+      switch (playerPosition) {
+        case "nextPlayer":
+          this.nextPlayerDeck.splice(0, 1);
           break;
-        case 'teammate':
-          this.teammateDeck.splice(0,1);
+        case "teammate":
+          this.teammateDeck.splice(0, 1);
           break;
-        case 'previousPlayer':
-          this.previousPlayerDeck.splice(0,1);
+        case "previousPlayer":
+          this.previousPlayerDeck.splice(0, 1);
           break;
       }
-    }
+    },
   },
   computed: {
     nextPlayer() {
@@ -570,10 +596,14 @@ export default {
         const team2 = value.team[1];
 
         if (this.isWin(team1)) {
-          this.gameResult = "草莓糕";
+          this.outputTeam1 = setTimeout(() => {
+            this.gameResult = "草莓糕";
+          }, 2500);
         }
         if (this.isWin(team2)) {
-          this.gameResult = "可麗露";
+          this.outputTeam2 = setTimeout(() => {
+            this.gameResult = "可麗露";
+          }, 2500);
         }
       },
       deep: true,
@@ -581,10 +611,11 @@ export default {
     thisRoundCard(newValue, oldValue) {
       const nowPlayed = Object.keys(newValue);
       const lastPlayed = Object.keys(oldValue);
+      //每次出牌，都找出該次出牌的玩家
       const lastTimePlayer = nowPlayed.filter((player) => {
         return !lastPlayed.includes(player);
       })[0];
-      if (lastTimePlayer&&lastTimePlayer!==this.userName) {
+      if (lastTimePlayer && lastTimePlayer !== this.userName) {
         this.minusOneCard(lastTimePlayer);
       }
     },
