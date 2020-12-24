@@ -114,7 +114,7 @@ export default {
       userNowPickedBind: "",
       callTrump: {
         trick: [1, 2, 3, 4],
-        suit: ["♣", "♦", "♥", '♠'],
+        suit: ["♣", "♦", "♥", "♠"],
       },
       userIsPassed: false,
     };
@@ -142,18 +142,18 @@ export default {
           .child("calledBind")
           .set(this.userCalledBinds);
         this.userIsPassed = true;
-        //新增玩家PASS數量
-        this.$store.commit("playerPass", this.passedPlayersAmount + 1);
-        const database = db.database().ref("/");
-        database.child("nowPassedPlayerAmount").set(this.passedPlayersAmount);
-        //如果pass人數還不達三人，輪到下一個玩家喊王
+        //現在的PASS玩家若不等於兩人（加上自己則為三人），就傳給下一家
         const passedPlayer = db.database().ref("/nowPassedPlayerAmount/");
         passedPlayer.once("value", (d) => {
           const amount = d.val();
-          if (this.passedPlayersAmount !== 3) {
+          if (this.passedPlayersAmount !== 2) {
+            const database = db.database().ref("/");
             database.child("nowPlayer").set(this.nextPlayer);
           }
         });
+        //新增玩家PASS數量
+        this.$store.commit("playerPass", this.passedPlayersAmount + 1);
+        passedPlayer.set(this.passedPlayersAmount);
       } else {
         //更新現在binding
         const data = {
@@ -202,7 +202,7 @@ export default {
       return this.$store.getters.isUsersTurn;
     },
     bindingHintText() {
-      if(this.userIsPassed) return '已經PASS囉！'
+      if (this.userIsPassed) return "已經PASS囉！";
       return this.isUsersTurn ? "YOUR TURN" : "NOT YOUR TURN";
     },
     userBindingHint() {
@@ -245,7 +245,11 @@ export default {
   },
   watch: {
     nowPlayingPlayer(value) {
-      if (value === this.$store.state.userName && this.userIsPassed) {
+      if (
+        value === this.$store.state.userName &&
+        this.userIsPassed &&
+        this.passedPlayersAmount !== 0
+      ) {
         const nowBind = db.database().ref("/");
         nowBind.child("nowPlayer").set(this.nextPlayer);
       }
