@@ -55,7 +55,7 @@ export default {
 
 <style lang="scss" scoped>
 .trick {
-  padding: 10px 0;
+  padding: 8px 0;
   border-bottom: 1px solid #dcdcdc;
   font-size: 18px;
   flex: 0 1 15%;

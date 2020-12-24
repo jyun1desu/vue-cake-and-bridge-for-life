@@ -549,10 +549,10 @@ export default {
         const team2 = value.team[1];
 
         if (this.isWin(team1)) {
-          this.gameResult = "草莓糕贏啦～";
+          this.gameResult = "草莓糕";
         }
         if (this.isWin(team2)) {
-          this.gameResult = "可麗露贏啦～";
+          this.gameResult = "可麗露";
         }
       },
       deep: true,

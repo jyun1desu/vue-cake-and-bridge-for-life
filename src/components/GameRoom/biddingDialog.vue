@@ -63,7 +63,7 @@
             pass: !userNowPickedBind,
           }"
         >
-          {{ userBindingHint }}
+          {{ userBindingHint }}&#xFE0E;
         </button>
       </form>
     </div>
@@ -180,7 +180,6 @@ export default {
       this.$store.commit("decideWinTricks");
       const whoGotBind = this.$store.state.nowBinding.whoCalled;
       const firstPlayer = this.nextPlayerName(whoGotBind);
-      this.$store.commit("assignFirstPlayer", firstPlayer);
       const nowPlayer = db.database().ref("/nowPlayer/");
       nowPlayer.set(firstPlayer);
     },
@@ -204,7 +203,7 @@ export default {
     },
     bindingHintText() {
       if(this.userIsPassed) return '已經PASS囉！'
-      return this.isUsersTurn ? "輪到你囉！" : "還沒輪到你～";
+      return this.isUsersTurn ? "YOUR TURN" : "NOT YOUR TURN";
     },
     userBindingHint() {
       if (this.userIsPassed) return "已經PASS啦";
@@ -339,7 +338,7 @@ export default {
         font-size: 12px;
         color: $black_suit_color;
         text-align: center;
-        margin: 10px 0;
+        margin: 7px 0;
       }
     }
   }
@@ -420,9 +419,9 @@ export default {
 
     .hint {
       background-color: $unable_color;
+      letter-spacing: 2px;
       &.highlight {
         font-size: 18px;
-        letter-spacing: 1px;
         color: $title_font_color;
         background-color: $highlight_color;
       }
@@ -440,10 +439,12 @@ export default {
 
     button {
       @include button_style;
+      padding: 7px 0;
       border-radius: 0;
       width: 100%;
-      font-size: 20px;
+      font-size: 18px;
       letter-spacing: 5px;
+      margin: 0;
       &.pass {
         background-color: $pass_color;
       }

@@ -52,6 +52,7 @@ export default {};
         flex: 1 1 auto;
         border-radius: 0;
         font-size: 18px;
+        margin: 0;
 
         &.no {
           background-color: $button_warn_color;
