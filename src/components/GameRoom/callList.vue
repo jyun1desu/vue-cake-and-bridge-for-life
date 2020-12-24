@@ -17,7 +17,7 @@
       v-for="(suit, index) in suits"
     >
       <span class="radio"></span>
-      <span class="pattern">{{ suit }}</span>
+      <span class="pattern">{{ suit }}&#xFE0E;</span>
     </span>
   </span>
 </template>

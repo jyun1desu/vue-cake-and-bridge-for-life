@@ -13,20 +13,20 @@
 
 <script>
 export default {
-  data(){
-    return{
-      inputCode:'',
-    }
+  data() {
+    return {
+      inputCode: "",
+    };
   },
-  methods:{
-    resetGame(){
-      const password = 'jyunyi';
-      if(this.inputCode===password){
-        this.$emit('reset-game')
+  methods: {
+    resetGame() {
+      const password = "jyunyi";
+      if (this.inputCode === password) {
+        this.$emit("reset-game");
       }
-      this.inputCode = '';
-    }
-  }
+      this.inputCode = "";
+    },
+  },
 };
 </script>
 
@@ -52,7 +52,10 @@ export default {
       align-items: center;
 
       .password {
+        user-select: auto;
+        -webkit-user-select: auto;
         border: none;
+        border-radius: 0;
         border-bottom: 1px solid #000;
         letter-spacing: 1px;
         line-height: 25px;

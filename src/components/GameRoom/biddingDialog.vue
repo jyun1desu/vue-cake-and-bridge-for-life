@@ -32,7 +32,7 @@
                 black_suit: bind.suit === '♣' || bind.suit === '♠',
               }"
             >
-              {{ bind.number + bind.suit || bind }}
+              {{ bind.number + bind.suit || bind }}&#xFE0E;
             </p>
           </div>
         </div>

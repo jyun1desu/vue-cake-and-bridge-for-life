@@ -14,7 +14,7 @@
         :class="{ red: suitColor === 'red', black: suitColor === 'black' }"
         class="suit"
       >
-        {{ suitInPoker }}
+        {{ suitInPoker }}&#xFE0E;
       </span>
     </div>
     <div class="pattern"></div>
@@ -29,7 +29,7 @@
         :class="{ red: suitColor === 'red', black: suitColor === 'black' }"
         class="suit"
       >
-        {{ suitInPoker }}
+        {{ suitInPoker }}&#xFE0E;
       </span>
     </div>
   </div>

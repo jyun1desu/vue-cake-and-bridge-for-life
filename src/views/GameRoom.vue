@@ -191,7 +191,7 @@
               black_suit: suitColor === 'black',
             }"
             class="suit"
-            >{{ hasTrump ? hasTrump.suit : "" }}</span
+            >{{ hasTrump ? hasTrump.suit : "" }}&#xFE0E;</span
           >
         </div>
         <div class="tricks">

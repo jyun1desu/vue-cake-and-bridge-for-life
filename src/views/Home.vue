@@ -6,13 +6,14 @@
       v-show="showAdmin"
     />
     <Logo @click="showAdmin = true" />
-    <form class="user_input">
+    <form id="name" class="user_input">
       <p>請輸入名字</p>
       <input 
-      v-model="userName"
-      type="text"/>
+      type="text"
+      v-model="userName" />
       <button
-        @click="enterGame"
+        type="submit"
+        @click.prevent="enterGame"
         :class="{ novacancy: nowPlayersAmount === 4 }"
         class="enter_button"
       >
@@ -108,13 +109,16 @@ $button-no-vacany: #90bf81;
     }
   }
   input {
+    user-select: auto;
+    -webkit-user-select: auto;
+    width: 50%;
+    display: block;
     text-align: center;
     color: $title_font_color;
     font-size: 22px;
     line-height: 25px;
     letter-spacing: 2px;
     padding: 5px;
-    width: 50%;
     margin: 0 0 20px 0;
     background-color: transparent;
     border: none;
