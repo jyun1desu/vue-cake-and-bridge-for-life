@@ -353,7 +353,7 @@ button {
     font-size: 25px;
     background-color: $button_color;
     margin-top: auto;
-    margin-bottom: 50px;
+    margin-bottom: 30px;
 
     &.warn {
       font-size: 20px;

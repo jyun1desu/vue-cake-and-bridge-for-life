@@ -3,12 +3,14 @@
 </template>
 
 <style lang="scss">
+@import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=M+PLUS+Rounded+1c:wght@300;400&display=swap');
 * {
-  font-family: $main_font_family;
+  font-family: 'Kosugi Maru', sans-serif;
   user-select: none;
 }
 body,
 html {
+  font-weight:400;
   background-color: $theme_background;
   box-sizing: border-box;
   overflow: hidden;

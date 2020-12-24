@@ -2,10 +2,14 @@
   <div class="result_page">
     <div class="dialog">
       <p class="title">贏家出來嚕</p>
-      <p class="text">恭喜草莓隊贏啦{{ gameResult }}</p>
+      <p class="text">恭喜{{ gameResult }}</p>
       <div class="button_area">
-        <button class="play">再玩一局</button>
-        <button class="leave">翻桌不玩</button>
+        <button 
+        @click="restartGame"
+        class="play">再玩一局</button>
+        <button 
+        @click="leaveGame"
+        class="leave">翻桌不玩</button>
       </div>
     </div>
   </div>
@@ -14,6 +18,14 @@
 <script>
 export default {
   props: ["game-result"],
+  methods:{
+    restartGame(){
+      console.log('再來一局')
+    },
+    leaveGame(){
+      console.log('走了走了')
+    }
+  }
 };
 </script>
 

@@ -15,7 +15,7 @@
         @continueGame="isOKtoGoOn = true"
         @restartGame="isOKtoGoOn = false"
       />
-      <ResultBox :game-result="gameResult" />
+      <ResultBox v-if="gameResult !== '激戰中'" :game-result="gameResult" />
       <ComfirmLeaveDialog
         @keepPlaying="showComfirmLeave = false"
         v-if="showComfirmLeave"
@@ -549,12 +549,11 @@ export default {
         const team2 = value.team[1];
 
         if (this.isWin(team1)) {
-          this.gameResult = "草莓糕贏啦！";
+          this.gameResult = "草莓糕贏啦～";
         }
         if (this.isWin(team2)) {
-          this.gameResult = "可麗露贏啦！";
+          this.gameResult = "可麗露贏啦～";
         }
-        console.log(this.gameResult);
       },
       deep: true,
     },
