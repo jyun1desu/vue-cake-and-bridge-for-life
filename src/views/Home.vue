@@ -116,7 +116,7 @@ $button-no-vacany: #90bf81;
     margin: 0 0 20px 0;
     background-color: transparent;
     border: none;
-    border-bottom: 2px solid $title_font_color;
+    border: 2px solid $title_font_color;
     &:active,
     &:focus {
       outline: none;

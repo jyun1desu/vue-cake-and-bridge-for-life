@@ -114,7 +114,7 @@ export default {
       userNowPickedBind: "",
       callTrump: {
         trick: [1, 2, 3, 4],
-        suit: ["♣", "♦", "♥", "♠"],
+        suit: ["♣", "♦", "♥", '♠'],
       },
       userIsPassed: false,
     };
