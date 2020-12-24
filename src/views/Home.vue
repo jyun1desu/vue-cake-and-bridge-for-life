@@ -6,11 +6,10 @@
       v-show="showAdmin"
     />
     <Logo @click="showAdmin = true" />
-    <div class="user_input">
+    <form class="user_input">
       <p>請輸入名字</p>
       <input 
       v-model="userName"
-      placeholder="hello"
       type="text"/>
       <button
         @click="enterGame"
@@ -20,7 +19,7 @@
         {{ message }}
       </button>
       <p class="now_players">現在人數:{{ nowPlayersAmount }}人/上限4人</p>
-    </div>
+    </form>
   </div>
 </template>
 
@@ -119,7 +118,8 @@ $button-no-vacany: #90bf81;
     margin: 0 0 20px 0;
     background-color: transparent;
     border: none;
-    border: 2px solid $title_font_color;
+    border-radius: 0;
+    border-bottom: 2px solid $title_font_color;
     &:active,
     &:focus {
       outline: none;
