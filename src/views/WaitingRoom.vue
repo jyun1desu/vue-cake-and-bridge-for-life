@@ -89,19 +89,13 @@ export default {
       //找到使用者資料上的key
       const allUsersID = Object.entries(nowPlayers).map((a) => a[0]);
       this.$store.commit("setUserID", allUsersID[this.userIndex]);
-      //預設隊伍
-      if (this.userIndex === 0 || this.userIndex === 3) {
-        this.chosenTeam = "team1";
-      } else {
-        this.chosenTeam = "team2";
-      }
       const path = "/playersInfo/" + this.userID;
       const user = db.database().ref(path);
-      user.once("value", (data) => {
-        if (this.userID !== "") {
-          user.update({ team: this.chosenTeam });
-        }
-      });
+      // user.once("value", (data) => {
+      //   if (this.userID !== "") {
+      //     user.update({ team: this.chosenTeam });
+      //   }
+      // });
     });
   },
   data() {
@@ -131,7 +125,6 @@ export default {
       userInfo.update({ OKtoPlay: true });
       this.showWaitingDialog = true;
 
-      //enter時全部人都已經同意時，隨機指派第一個玩家、洗牌發牌
       const playerInfo = Array.from(this.playerOrder).map((player, index) => {
         return {
           name: player,
@@ -152,8 +145,8 @@ export default {
         if (OKAmount === 4) {
           this.$store.commit("assignFirstPlayer", this.userName);
           db.database().ref("/nowPlayer/").set(this.userName);
-          const shuffledDeck = this.shuffle(this.buildNewDeck())
-          const deal = this.dealCards(4,shuffledDeck)
+          const shuffledDeck = this.shuffle(this.buildNewDeck());
+          const deal = this.dealCards(4, shuffledDeck);
           db.database().ref("/deck/").set(deal);
         }
       });

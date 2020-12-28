@@ -113,7 +113,7 @@ export default {
     return {
       userNowPickedBind: "",
       callTrump: {
-        trick: [1, 2, 3, 4],
+        trick: [1, 2, 3, 4, 5],
         suit: ["♣", "♦", "♥", "♠"],
       },
       userIsPassed: false,
@@ -432,9 +432,13 @@ export default {
       text-align: center;
       padding: 10px 0;
     }
-
+    .choose_list {
+      padding: 5px 0;
+    }
     .call__trump {
-      padding: 5px 10px;
+      padding: 0 10px;
+      overflow: scroll;
+      max-height: 24vh;
       & > span:last-child {
         padding-bottom: 5px;
         border: none;

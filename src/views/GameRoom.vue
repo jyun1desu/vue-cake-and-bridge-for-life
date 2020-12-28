@@ -470,9 +470,10 @@ export default {
       }
     },
     backToWaitingRoom() {
-      //向所有人發送：有人要換隊友，3秒後導向等待室...
-      //將所有人導向等待室
-      console.log("換！");
+      this.$router.replace({
+        name: "WaitingRoom",
+        params: { userName: this.userName },
+      });
     },
     leadAllPlayersLeave() {
       const someoneLeave = db.database().ref("/someoneLeave/");
@@ -598,12 +599,12 @@ export default {
         if (this.isWin(team1)) {
           this.outputTeam1 = setTimeout(() => {
             this.gameResult = "草莓糕";
-          }, 2500);
+          }, 1500);
         }
         if (this.isWin(team2)) {
           this.outputTeam2 = setTimeout(() => {
             this.gameResult = "可麗露";
-          }, 2500);
+          }, 1500);
         }
       },
       deep: true,
@@ -619,6 +620,17 @@ export default {
         this.minusOneCard(lastTimePlayer);
       }
     },
+  },
+  beforeRouteLeave(to, from, next) {
+    if (to.name === "WaitingRoom") {
+      console.log('a')
+      const playersInfo = db.database().ref("/playersInfo/");
+      playersInfo
+        .child(`player${this.userIndex + 1}`)
+        .child("OKtoPlay")
+        .set(false);
+    }
+    next();
   },
 };
 </script>

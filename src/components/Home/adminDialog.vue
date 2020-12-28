@@ -41,7 +41,7 @@ export default {
   align-items: center;
   .dialog {
     width: 80vw;
-    padding: 0 10px 20px 10px;
+    padding: 10px;
     box-sizing: border-box;
     border-radius: 10px;
     background: #fff;
@@ -75,7 +75,7 @@ export default {
           margin: 0;
           background-color: transparent;
           color: $button_color;
-          font-size: 30px;
+          font-size: 20px;
           border-radius: 100%;
         }
       }

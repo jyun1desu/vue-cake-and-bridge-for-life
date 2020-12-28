@@ -10,13 +10,6 @@ const routes = [{
     path: '/',
     name: 'Home',
     component: Home,
-    // beforeEnter(to,from,next){
-    //   if(from.name==='GameRoom'||from.name==='WaitingRoom'){
-    //     const gameData = db.database().ref("/");
-    //     gameData.set({nowPlayerAmount:0})
-    //   }
-    //   next();
-    // }
   },
   {
     path: '/waitingRoom/:userName',

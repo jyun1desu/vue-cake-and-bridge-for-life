@@ -8,9 +8,7 @@
     <Logo @click="showAdmin = true" />
     <form id="name" class="user_input">
       <p>請輸入名字</p>
-      <input 
-      type="text"
-      v-model="userName" />
+      <input type="text" v-model="userName" />
       <button
         type="submit"
         @click.prevent="enterGame"
@@ -60,18 +58,25 @@ export default {
     enterGame() {
       if (this.nowPlayersAmount === 4) return;
       if (!this.userName.length || this.userName.length > 7) return;
-
-      const nowPlayerAmount = db.database().ref("nowPlayerAmount");
-      const playersInfo = db.database().ref("/playersInfo/");
-      nowPlayerAmount.set(this.nowPlayersAmount + 1);
-      playersInfo
-        .child(`player${this.nowPlayersAmount}`)
-        .set({ name: this.userName, team: "" });
-      this.$store.commit("setUserName", this.userName);
+      this.setUserData();
       this.$router.push({
         name: "WaitingRoom",
         params: { userName: this.userName },
       });
+    },
+    setUserData() {
+      const nowPlayerAmount = db.database().ref("nowPlayerAmount");
+      const playersInfo = db.database().ref("/playersInfo/");
+      nowPlayerAmount.set(this.nowPlayersAmount + 1);
+      playersInfo.child(`${this.nowPlayersAmount - 1}`).set({
+        name: this.userName,
+        team: `${
+          this.nowPlayersAmount === 1 || this.nowPlayersAmount === 4
+            ? "team1"
+            : "team2"
+        }`,
+      });
+      this.$store.commit("setUserName", this.userName);
     },
     resetGame() {
       const gameData = db.database().ref("/");
