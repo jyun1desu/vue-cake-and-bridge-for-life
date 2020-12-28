@@ -1,7 +1,8 @@
 <template>
   <div class="logo">
     <img class="logo__image" src="@/assets/logo.svg" alt="">
-    <h1 class="game_name">糕橋一生</h1>
+    <img src=@/assets/name.jpg alt="" class="logo__name">
+    <!-- <h1 class="game_name">糕橋一生</h1> -->
   </div>
 </template>
 
@@ -27,6 +28,9 @@ export default {
   &__image{
     width: 60%;
     margin-bottom: 20px;
+  }
+  &__name{
+    width: 70%;
   }
 }
     .game_name{
