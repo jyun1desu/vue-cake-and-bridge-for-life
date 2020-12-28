@@ -87,21 +87,21 @@ export default {
       const data = d.val();
       if (data) this.$store.commit("updateNowBinding", data);
     });
-    players.on('value',(d)=>{
+    players.on("value", (d) => {
       const data = d.val();
       const bindArray = [];
-      this.playersInfo.forEach(player=>{
-        const bind = data.find(p=>p.name===player.name).calledBind;
+      this.playersInfo.forEach((player) => {
+        const bind = data.find((p) => p.name === player.name).calledBind;
         bindArray.push(bind);
-      })
-      const newPlayerInfo = this.playersInfo.map((p,i)=>{
+      });
+      const newPlayerInfo = this.playersInfo.map((p, i) => {
         return {
           ...p,
-          calledBind:bindArray[i]
-        }
-      })
-      this.$store.commit('setPlayersInfo',newPlayerInfo)
-    })
+          calledBind: bindArray[i],
+        };
+      });
+      this.$store.commit("setPlayersInfo", newPlayerInfo);
+    });
     //pass玩家超過三人，即產生王牌
     passedPlayer.on("value", (d) => {
       const amount = d.val();
@@ -110,6 +110,14 @@ export default {
         this.bindIsDecided();
       }
     });
+  },
+  unmounted() {
+    const nowBind = db.database().ref("/nowCalledBind/");
+    const players = db.database().ref("/playersInfo/");
+    const passedPlayer = db.database().ref("/nowPassedPlayerAmount/");
+    nowBind.off();
+    players.off();
+    passedPlayer.off();
   },
   data() {
     return {

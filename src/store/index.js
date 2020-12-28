@@ -101,7 +101,7 @@ export default createStore({
       const winTeam = state.gameInfo.team[teamIndex];
       winTeam.nowWin++
     },
-    updataWonTricks(state,cards){
+    updateWonTricks(state,cards){
       state.wonTricks.push(cards)
     }
   },

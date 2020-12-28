@@ -326,16 +326,15 @@ export default {
         const wonPlayer = Object.keys(cards)[wonCardIndex];
         //贏家收這墩
         if (wonPlayer === this.userName) {
-          this.$store.commit("updataWonTricks", cardsArray);
+          this.$store.commit("updateWonTricks", cardsArray);
         }
         //清空牌桌，指定下一個贏家
         this.initRound = setTimeout(() => {
+          const nowPlayer = db.database().ref("/nowPlayer/");
+          nowPlayer.set(wonPlayer);
           this.clearCardTable();
           //贏的隊加一分
           this.winThisRound(wonPlayer);
-          this.$store.commit("assignFirstPlayer", wonPlayer);
-          const nowPlayer = db.database().ref("/nowPlayer/");
-          nowPlayer.set(wonPlayer);
         }, 2500);
       }
     });
@@ -351,6 +350,16 @@ export default {
         }, 5000);
       }
     });
+  },
+  unmounted(){
+    const nowPlayer = db.database().ref("/nowPlayer/");
+    const deck = db.database().ref("/deck/");
+    const thisRoundSuit = db.database().ref("/thisRoundSuit/");
+    const someoneLeave = db.database().ref("/someoneLeave/");
+    nowPlayer.off();
+    deck.off();
+    thisRoundSuit.off();
+    someoneLeave.off();
   },
   data() {
     return {
