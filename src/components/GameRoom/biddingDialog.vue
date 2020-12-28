@@ -80,7 +80,6 @@ export default {
   },
   mounted() {
     const nowBind = db.database().ref("/nowCalledBind/");
-    const nowPlayer = db.database().ref("/nowPlayer/");
     const players = db.database().ref("/playersInfo/");
     const passedPlayer = db.database().ref("/nowPassedPlayerAmount/");
     passedPlayer.set(0);
@@ -88,18 +87,21 @@ export default {
       const data = d.val();
       if (data) this.$store.commit("updateNowBinding", data);
     });
-    nowPlayer.on("value", (d) => {
+    players.on('value',(d)=>{
       const data = d.val();
-      if (data) this.$store.commit("switchToNextPlayer", data);
-    });
-    players.on("value", (d) => {
-      const players = Object.entries(d.val()).map((a) => a[1]);
-      const newPlayerInfo = this.playersInfo.map((player, index) => {
-        const data = players.filter((p) => p.name === player.name)[0];
-        return data;
-      });
-      this.$store.commit("setPlayersInfo", newPlayerInfo);
-    });
+      const bindArray = [];
+      this.playersInfo.forEach(player=>{
+        const bind = data.find(p=>p.name===player.name).calledBind;
+        bindArray.push(bind);
+      })
+      const newPlayerInfo = this.playersInfo.map((p,i)=>{
+        return {
+          ...p,
+          calledBind:bindArray[i]
+        }
+      })
+      this.$store.commit('setPlayersInfo',newPlayerInfo)
+    })
     //pass玩家超過三人，即產生王牌
     passedPlayer.on("value", (d) => {
       const amount = d.val();
@@ -138,7 +140,7 @@ export default {
         const playersInfo = db.database().ref("/playersInfo/");
         this.$store.commit("updateUserCalledBinds", "PASS");
         playersInfo
-          .child(`player${this.userIndex + 1}`)
+          .child(this.userIndex)
           .child("calledBind")
           .set(this.userCalledBinds);
         this.userIsPassed = true;
@@ -168,7 +170,7 @@ export default {
         const playersInfo = db.database().ref("/playersInfo/");
         this.$store.commit("updateUserCalledBinds", this.userNowPickedBind);
         playersInfo
-          .child(`player${this.userIndex + 1}`)
+          .child(this.userIndex)
           .child("calledBind")
           .set(this.userCalledBinds);
         //初始user目前喊的王
@@ -232,9 +234,6 @@ export default {
     },
     nextPlayer() {
       return this.$store.getters.nextPlayer;
-    },
-    userID() {
-      return this.$store.state.userID;
     },
     userIndex() {
       return this.$store.state.userIndex;

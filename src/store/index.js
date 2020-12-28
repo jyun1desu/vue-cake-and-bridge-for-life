@@ -30,7 +30,6 @@ export default createStore({
     userName: '',
     players: [],
     wonTricks: [],
-    userID: '',
     userIndex: '',
     userCalledBinds:[],
   },
@@ -49,9 +48,6 @@ export default createStore({
     }
   },
   mutations: {
-    setUserID(state, ID) {
-      state.userID = ID;
-    },
     setUserIndex(state, index) {
       state.userIndex = index;
     },

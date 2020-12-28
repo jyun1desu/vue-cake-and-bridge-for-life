@@ -77,6 +77,7 @@ export default {
         }`,
       });
       this.$store.commit("setUserName", this.userName);
+      this.$store.commit("setUserIndex", this.nowPlayersAmount-1);
     },
     resetGame() {
       const gameData = db.database().ref("/");

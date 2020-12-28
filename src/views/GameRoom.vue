@@ -621,17 +621,6 @@ export default {
       }
     },
   },
-  beforeRouteLeave(to, from, next) {
-    if (to.name === "WaitingRoom") {
-      console.log('a')
-      const playersInfo = db.database().ref("/playersInfo/");
-      playersInfo
-        .child(`player${this.userIndex + 1}`)
-        .child("OKtoPlay")
-        .set(false);
-    }
-    next();
-  },
 };
 </script>
 

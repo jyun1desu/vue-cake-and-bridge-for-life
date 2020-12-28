@@ -1,68 +1,73 @@
 <template>
   <LoadingDialog v-if="showWaitingDialog === true" />
-  <div class="wait_room">
-    <button @click="leaveGame" class="leave_button">不打了不打了</button>
-    <div class="players">
-      <div
-        :class="{
-          canele_team: team[0] === 'team2',
-          default_strawberry_team: !team[0] || team[0] === 'team1',
-        }"
-        class="player player__first"
-      >
-        <p class="player__name">{{ playerOrder[0] || "" }}</p>
-      </div>
-      <div
-        :class="{
-          canele_team: !team[1] || team[1] === 'team2',
-          default_strawberry_team: team[1] === 'team1',
-        }"
-        class="player player__second"
-      >
-        <p class="player__name">{{ playerOrder[1] || "" }}</p>
-      </div>
-      <div
-        :class="{
-          canele_team: !team[2] || team[2] === 'team2',
-          default_strawberry_team: team[2] === 'team1',
-        }"
-        class="player player__third"
-      >
-        <p class="player__name">{{ playerOrder[2] || "" }}</p>
-      </div>
-      <div
-        :class="{
-          canele_team: team[3] === 'team2',
-          default_strawberry_team: !team[3] || team[3] === 'team1',
-        }"
-        class="player player__fourth"
-      >
-        <p class="player__name">{{ playerOrder[3] || "" }}</p>
-      </div>
-    </div>
-    <div class="choose_team">
-      <div class="options">
+  <div class="page">
+    <div class="wait_room">
+      <div class="players">
         <div
-          @click="chooseTeam('team1')"
-          :class="{ chosen: chosenTeam === 'team1' }"
-          class="option team1"
+          :class="{
+            canele_team: team[0] === 'team2',
+            default_strawberry_team: !team[0] || team[0] === 'team1',
+          }"
+          class="player player__first"
         >
-          <span class="radio"></span>
-          <span>草莓糕</span>
+          <p class="player__name">{{ playerOrder[0] || "" }}</p>
         </div>
         <div
-          @click="chooseTeam('team2')"
-          :class="{ chosen: chosenTeam === 'team2' }"
-          class="option team2"
+          :class="{
+            canele_team: !team[1] || team[1] === 'team2',
+            default_strawberry_team: team[1] === 'team1',
+          }"
+          class="player player__second"
         >
-          <span class="radio"></span>
-          <span>可麗露</span>
+          <p class="player__name">{{ playerOrder[1] || "" }}</p>
+        </div>
+        <div
+          :class="{
+            canele_team: !team[2] || team[2] === 'team2',
+            default_strawberry_team: team[2] === 'team1',
+          }"
+          class="player player__third"
+        >
+          <p class="player__name">{{ playerOrder[2] || "" }}</p>
+        </div>
+        <div
+          :class="{
+            canele_team: team[3] === 'team2',
+            default_strawberry_team: !team[3] || team[3] === 'team1',
+          }"
+          class="player player__fourth"
+        >
+          <p class="player__name">{{ playerOrder[3] || "" }}</p>
         </div>
       </div>
+      <div class="choose_team">
+        <div class="options">
+          <div
+            @click="chooseTeam('team1')"
+            :class="{ chosen: chosenTeam === 'team1' }"
+            class="option team1"
+          >
+            <span class="radio"></span>
+            <span>草莓糕</span>
+          </div>
+          <div
+            @click="chooseTeam('team2')"
+            :class="{ chosen: chosenTeam === 'team2' }"
+            class="option team2"
+          >
+            <span class="radio"></span>
+            <span>可麗露</span>
+          </div>
+        </div>
+      </div>
+      <button
+        @click="enterGame"
+        :class="{ warn: buttonWarn }"
+        class="start_game"
+      >
+        {{ buttonMessage }}
+      </button>
     </div>
-    <button @click="enterGame" :class="{ warn: buttonWarn }" class="start_game">
-      {{ buttonMessage }}
-    </button>
   </div>
 </template>
 
@@ -75,31 +80,37 @@ export default {
     LoadingDialog,
   },
   created() {
+    //隊伍
     const nowPlayers = db.database().ref("/playersInfo/");
     nowPlayers.once("value", (data) => {
-      const nowPlayers = data.val();
-      //所有玩家順序
-      const nowPlayersArray = Object.entries(nowPlayers).map((a) => a[1].name);
-      this.playerOrder = nowPlayersArray;
-      //找到使用者是第幾個人
-      this.$store.commit(
-        "setUserIndex",
-        nowPlayersArray.indexOf(this.userName)
-      );
-      //找到使用者資料上的key
-      const allUsersID = Object.entries(nowPlayers).map((a) => a[0]);
-      this.$store.commit("setUserID", allUsersID[this.userIndex]);
-      const path = "/playersInfo/" + this.userID;
-      const user = db.database().ref(path);
-      // user.once("value", (data) => {
-      //   if (this.userID !== "") {
-      //     user.update({ team: this.chosenTeam });
-      //   }
-      // });
+      const playersArray = data.val();
+      const user = playersArray[this.userIndex];
+      this.chosenTeam = user.team;
     });
+
+    nowPlayers.on("value", (data) => {
+      const nowPlayers = data.val();
+      this.players = data.val();
+      this.team = nowPlayers.map((player) => player.team);
+      this.playerOrder = nowPlayers.map((player) => player.name);
+
+      const OKAmount = nowPlayers.filter((player) => player.OKtoPlay === true)
+        .length;
+      if (OKAmount === 4) {
+        this.showWaitingDialog = false;
+        this.$router.push({
+          name: "GameRoom",
+          params: { userName: this.userName },
+        });
+      }
+    });
+    const userRef = "/playersInfo/" + this.userIndex;
+    const userInfo = db.database().ref(userRef);
+    userInfo.update({ OKtoPlay: false })
   },
   data() {
     return {
+      players: [],
       playerOrder: [],
       chosenTeam: "",
       team: [],
@@ -109,39 +120,28 @@ export default {
   methods: {
     chooseTeam(team) {
       this.chosenTeam = team;
-      const user = "/playersInfo/" + this.userID;
+      const user = "/playersInfo/" + this.userIndex;
       const userTeamInfo = db.database().ref(user);
       userTeamInfo.update({ team: this.chosenTeam });
     },
-    leaveGame() {
-      this.$router.push({
-        name: "Home",
-      });
-    },
     enterGame() {
       if (this.buttonWarn) return;
-      const user = "/playersInfo/" + this.userID;
-      const userInfo = db.database().ref(user);
+      const userRef = "/playersInfo/" + this.userIndex;
+      const userInfo = db.database().ref(userRef);
       userInfo.update({ OKtoPlay: true });
       this.showWaitingDialog = true;
 
-      const playerInfo = Array.from(this.playerOrder).map((player, index) => {
-        return {
-          name: player,
-          team: this.team[index],
-        };
-      });
-      const team1 = playerInfo.filter((player) => player.team === "team1");
-      const team2 = playerInfo.filter((player) => player.team === "team2");
+      const team1 = this.players.filter((player) => player.team === "team1");
+      const team2 = this.players.filter((player) => player.team === "team2");
       const orderArray = [team1[0], team2[0], team1[1], team2[1]];
       this.$store.commit("setPlayersInfo", orderArray);
       //
       const nowPlayers = db.database().ref("/playersInfo");
       nowPlayers.once("value", (data) => {
         const nowPlayers = data.val();
-        const OKtoGo = Object.entries(nowPlayers).map((a) => a[1].OKtoPlay);
-        const OKAmount = Array.from(OKtoGo).filter((answer) => answer === true)
-          .length;
+        const OKAmount = nowPlayers.filter((player) => player.OKtoPlay === true)
+        .length;
+        //最後一個點擊進入遊戲的玩家為第一輪第一個玩家，進入同時洗牌、發牌
         if (OKAmount === 4) {
           this.$store.commit("assignFirstPlayer", this.userName);
           db.database().ref("/nowPlayer/").set(this.userName);
@@ -203,9 +203,6 @@ export default {
     },
   },
   computed: {
-    userID() {
-      return this.$store.state.userID;
-    },
     userIndex() {
       return this.$store.state.userIndex;
     },
@@ -227,35 +224,18 @@ export default {
       return this.$store.state.userName;
     },
   },
-  mounted() {
-    const nowPlayers = db.database().ref("/playersInfo");
-    nowPlayers.on("value", (data) => {
-      const nowPlayers = data.val();
-      const teamArray = Object.entries(nowPlayers).map((a) => a[1].team);
-      const nowPlayersArray = Object.entries(nowPlayers).map((a) => a[1].name);
-      this.team = teamArray;
-      this.playerOrder = nowPlayersArray;
-
-      const OKtoGo = Object.entries(nowPlayers).map((a) => a[1].OKtoPlay);
-      const OKAmount = Array.from(OKtoGo).filter((answer) => answer === true)
-        .length;
-      if (OKAmount === 4) {
-        this.showWaitingDialog = false;
-        this.$router.push({
-          name: "GameRoom",
-          params: { userName: this.userName },
-        });
-      }
-    });
-  },
 };
 </script>
 
 <style lang="scss" scoped>
+.page {
+  height: 100%;
+  display: flex;
+}
 .wait_room {
   box-sizing: border-box;
   padding: 5vw;
-  height: 100%;
+  align-self: center;
   display: flex;
   flex-direction: column;
   align-items: center;
