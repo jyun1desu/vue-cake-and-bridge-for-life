@@ -38,6 +38,7 @@ export default {
       color: $title_font_color;
       text-align: center;
       font-size: 25px;
+      margin-top:0;
     }
     button {
       @include button_style;

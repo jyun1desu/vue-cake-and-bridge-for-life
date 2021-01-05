@@ -13,6 +13,7 @@
         >贏啦～
       </p>
       <div class="button_area">
+        <button @click="restartGame" class="change_mate">更換隊友</button>
         <button @click="restartGame" class="play">再玩一局</button>
         <button @click="leaveGame" class="leave">翻桌不玩</button>
       </div>

@@ -15,13 +15,67 @@
         <div></div>
         <div></div>
       </div>
-      <p class="text">等待其他玩家開始</p>
+      <p class="text">{{ hintText }}</p>
+      <p v-if="type !== 'waiting'" class="text">
+        {{ `${timerCount} 秒後離開遊戲間` }}
+      </p>
     </div>
   </div>
 </template>
 
 <script>
-export default {};
+export default {
+  props: ["type"],
+  data() {
+    return {
+      timerCount: 5,
+    };
+  },
+  computed: {
+    hintText() {
+      switch (this.type) {
+        case "waiting":
+          return `等待其他玩家開始`;
+        case "leave-countdown":
+          return "有人離開嚕！";
+        case "change-mate-countdown":
+          return "有人要換隊友唷";
+        default:
+          return "";
+      }
+    },
+  },
+  methods: {
+    leaveGame() {
+      this.$router.push({
+        name: "Home",
+      });
+    },
+  },
+  watch: {
+    timerCount: {
+      handler(value) {
+        if (this.type !== "waiting" && value > 0) {
+          setTimeout(() => {
+            this.timerCount--;
+          }, 1000);
+        }
+        if (value === 0) {
+          switch (this.type) {
+            case "leave-countdown":
+              this.leaveGame();
+              break;
+            case "change-mate-countdown":
+              break;
+            default:
+              throw new Error();
+          }
+        }
+      },
+      immediate: true,
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -37,8 +91,9 @@ export default {};
     padding: 30px;
     background-color: #fff;
 
-    .text{
-      color:$title_font_color;
+    .text {
+      color: $title_font_color;
+      margin: 5px 0;
     }
   }
 

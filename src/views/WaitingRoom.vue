@@ -1,5 +1,5 @@
 <template>
-  <LoadingDialog v-if="showWaitingDialog === true" />
+  <LoadingDialog type="waiting" v-if="showWaitingDialog === true" />
   <div class="page">
     <div class="wait_room">
       <div class="players">
@@ -73,7 +73,7 @@
 
 <script>
 import db from "../db.js";
-import LoadingDialog from "../components/waitingRoom/loadingDialog.vue";
+import LoadingDialog from "../components/loadingDialog.vue";
 export default {
   name: "WaitingRoom",
   components: {

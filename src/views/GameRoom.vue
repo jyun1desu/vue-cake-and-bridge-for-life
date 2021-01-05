@@ -15,6 +15,7 @@
         @continueGame="isOKtoGoOn = true"
         @restartGame="isOKtoGoOn = false"
       />
+      <LoadingDialog v-if="loadingType" :type="loadingType" />
       <ResultBox v-if="gameResult !== '激戰中'" :game-result="gameResult" />
       <ComfirmLeaveDialog
         @player-leave="leadAllPlayersLeave"
@@ -222,7 +223,7 @@
     </div>
 
     <div :class="{ show: showSettings }" class="settings">
-      <button @click="backToWaitingRoom" class="change_mate">更換隊友</button>
+      <button class="admin_login">登入管理員</button>
       <button
         @click="
           showComfirmLeave = true;
@@ -274,6 +275,7 @@ import BiddingDialog from "../components/GameRoom/biddingDialog.vue";
 import ComfirmLeaveDialog from "../components/GameRoom/leaveGameDialog.vue";
 import WonTricksBox from "../components/GameRoom/wonTricks.vue";
 import ResultBox from "../components/GameRoom/resultDialog.vue";
+import LoadingDialog from "../components/loadingDialog.vue";
 export default {
   name: "GameRoom",
   components: {
@@ -283,6 +285,7 @@ export default {
     ComfirmLeaveDialog,
     WonTricksBox,
     ResultBox,
+    LoadingDialog,
   },
   mounted() {
     const nowPlayer = db.database().ref("/nowPlayer/");
@@ -342,16 +345,11 @@ export default {
     someoneLeave.on("value", (data) => {
       const isAny = data.val();
       if (isAny) {
-        //送大家離開囉～
-        this.leadToHome = setTimeout(() => {
-          this.$router.push({
-            name: "Home",
-          });
-        }, 5000);
+        this.popLeaveLoading();
       }
     });
   },
-  unmounted(){
+  unmounted() {
     const nowPlayer = db.database().ref("/nowPlayer/");
     const deck = db.database().ref("/deck/");
     const thisRoundSuit = db.database().ref("/thisRoundSuit/");
@@ -377,6 +375,7 @@ export default {
       showWonTricks: false,
       showSettings: false,
       showComfirmLeave: false,
+      loadingType: null,
     };
   },
   methods: {
@@ -487,6 +486,9 @@ export default {
     leadAllPlayersLeave() {
       const someoneLeave = db.database().ref("/someoneLeave/");
       someoneLeave.set(true);
+    },
+    popLeaveLoading() {
+      this.loadingType = "leave-countdown";
     },
     isWin(teamInfo) {
       const nowWin = teamInfo.nowWin;
