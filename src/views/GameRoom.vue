@@ -1,6 +1,8 @@
 <template>
   <div class="game_room">
+    <LoadingDialog v-if="loadingType" :type="loadingType" />
     <div
+      v-if="!loadingType"
       @click="
         nowPickSuit = null;
         showWonTricks = false;
@@ -15,7 +17,6 @@
         @continueGame="isOKtoGoOn = true"
         @restartGame="isOKtoGoOn = false"
       />
-      <LoadingDialog v-if="loadingType" :type="loadingType" />
       <ResultBox v-if="gameResult !== '激戰中'" :game-result="gameResult" />
       <ComfirmLeaveDialog
         @player-leave="leadAllPlayersLeave"
@@ -349,18 +350,9 @@ export default {
       }
     });
   },
-  unmounted() {
-    const nowPlayer = db.database().ref("/nowPlayer/");
-    const deck = db.database().ref("/deck/");
-    const thisRoundSuit = db.database().ref("/thisRoundSuit/");
-    const someoneLeave = db.database().ref("/someoneLeave/");
-    nowPlayer.off();
-    deck.off();
-    thisRoundSuit.off();
-    someoneLeave.off();
-  },
   data() {
     return {
+      clearAll: false,
       deck: [],
       usersDeck: [],
       nextPlayerDeck: [],
@@ -375,6 +367,7 @@ export default {
       showWonTricks: false,
       showSettings: false,
       showComfirmLeave: false,
+      firstLeave: null,
       loadingType: null,
     };
   },
@@ -484,6 +477,7 @@ export default {
       });
     },
     leadAllPlayersLeave() {
+      this.firstLeave = true;
       const someoneLeave = db.database().ref("/someoneLeave/");
       someoneLeave.set(true);
     },
@@ -631,6 +625,26 @@ export default {
         this.minusOneCard(lastTimePlayer);
       }
     },
+  },
+  beforeRouteLeave(to, from, next) {
+    if (to.path === "/") {
+      this.clearAll = true;
+    }
+    next();
+  },
+  unmounted() {
+    const nowPlayer = db.database().ref("/nowPlayer/");
+    const deck = db.database().ref("/deck/");
+    const thisRoundSuit = db.database().ref("/thisRoundSuit/");
+    const someoneLeave = db.database().ref("/someoneLeave/");
+    nowPlayer.off();
+    deck.off();
+    thisRoundSuit.off();
+    someoneLeave.off();
+    if (this.clearAll && !this.firstLeave) {
+      const gameData = db.database().ref("/");
+      gameData.set({ nowPlayerAmount: 0 });
+    }
   },
 };
 </script>

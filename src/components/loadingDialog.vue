@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import db from "../db.js";
 export default {
   props: ["type"],
   data() {
@@ -60,7 +61,7 @@ export default {
             this.timerCount--;
           }, 1000);
         }
-        if (value === 0) {
+        if (value === 0){
           switch (this.type) {
             case "leave-countdown":
               this.leaveGame();
