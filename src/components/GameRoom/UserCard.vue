@@ -93,7 +93,7 @@ export default {
   transition: .2s all;
   &.now_pick{
     transform: translateY(-20%) scale(1.1);
-    margin-left:-10vw !important;
+    margin-left:-9vw !important;
   }
 
   .card_info {
