@@ -3,16 +3,16 @@
 https://jyun1desu.github.io/cake-and-bridge-for-life/#/
 
 ![demo圖](https://imgur.com/7dqT6pZ.jpg)
---
+
+### 說明
+突然想要打橋牌的時候，手邊常常沒有牌、更常沒有適合的場地（只能找公園的涼亭了）。這時候就可以拿出糕橋一生～～～公車上、咖啡店、風很大的河濱⋯⋯不受空間跟器材限制快樂打橋牌吧！（還可以不用洗牌）。
 ### 使用技術
 - Vue CLI
 - Vuex
 - Vue Router
 - Sass
-- Firebase realtime data
-
+- Firebase Realtime Data
 ---
-
 ### 實現功能
 - 可以同時四人連線遊玩，適合在手機上遊玩
 #### 首頁
