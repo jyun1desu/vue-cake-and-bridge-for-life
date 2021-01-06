@@ -1,6 +1,15 @@
 <template>
   <div class="game_room">
-    <LoadingDialog v-if="loadingType" :type="loadingType" />
+    <LoadingDialog
+      :type="loadingType"
+      v-if="loadingType === 'leave-countdown'"
+    />
+    <LoadingDialog
+      @close="popLoading(null)"
+      :type="loadingType"
+      v-if="loadingType === 'change mate' || loadingType === 'badluck'"
+    />
+    <LoadingDialog type="'waiting'" v-if="loadingType === 'waiting'" />
     <div
       class="game"
       v-if="!loadingType"
@@ -13,9 +22,9 @@
     >
       <BiddingDialog v-if="!hasTrump" />
       <GiveUpThisDeckDialog
-        v-if="dealDone && badLuck && !isOKtoGoOn"
+        v-if="badLuck&&!isOKtoGoOn"
         @continueGame="isOKtoGoOn = true"
-        @restartGame="isOKtoGoOn = false"
+        @giveUp="giveUpThisRound"
       />
       <ResultBox
         @team-mate-change="leadAllPlayersLeave('change mate')"
@@ -28,7 +37,7 @@
         @keepPlaying="showComfirmLeave = false"
         v-if="showComfirmLeave"
       />
-      <div v-if="dealDone" class="players_with_card">
+      <div class="players_with_card">
         <div class="player player__cross">
           <div
             class="card"
@@ -296,27 +305,14 @@ export default {
     LoadingDialog,
   },
   created() {
-    this.initGame();
+    this.initGameData();
     this.detectDisConnect();
+    this.setNewDeck();
   },
   mounted() {
     const nowPlayer = db.database().ref("/nowPlayer/");
     nowPlayer.on("value", (data) => {
       this.$store.commit("switchToNextPlayer", data.val());
-    });
-    const deck = db.database().ref("/deck/");
-    deck.on("value", (data) => {
-      this.deck = data.val();
-      this.usersDeck = this.deck[this.userIndex];
-      this.nextPlayerDeck = this.deck[
-        this.userIndex + 1 > 3 ? this.userIndex - 3 : this.userIndex + 1
-      ];
-      this.teammateDeck = this.deck[
-        this.userIndex + 2 > 3 ? this.userIndex - 2 : this.userIndex + 2
-      ];
-      this.previousPlayerDeck = this.deck[
-        this.userIndex + 3 > 3 ? this.userIndex - 1 : this.userIndex + 3
-      ];
     });
     const thisRoundSuit = db.database().ref("/thisRoundSuit/");
     thisRoundSuit.on("value", (data) => {
@@ -367,9 +363,11 @@ export default {
           break;
       }
     });
+    this.listenToRestart();
   },
   data() {
     return {
+      dealDone: false,
       leaveTo: null,
       deck: [],
       usersDeck: [],
@@ -377,7 +375,6 @@ export default {
       teammateDeck: [],
       previousPlayerDeck: [],
       thisRoundCard: {},
-      dealDone: true,
       gameResult: "激戰中",
       nowPickSuit: null,
       isOKtoGoOn: null,
@@ -390,6 +387,79 @@ export default {
     };
   },
   methods: {
+    ////建立新牌組
+    buildNewDeck() {
+      const suit = ["spades", "heart", "diamond", "club"];
+      const number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+      const deck = [];
+      for (let i = 0; i < suit.length; i++) {
+        let card = {};
+        for (let j = 0; j < number.length; j++) {
+          card = {
+            suit: suit[i],
+            number: number[j],
+          };
+          deck.push(card);
+        }
+      }
+      return deck;
+    },
+    ////洗牌
+    shuffle(deck) {
+      let i = deck.length;
+      while (i > 1) {
+        let index = Math.floor(Math.random() * i--);
+        [deck[i], deck[index]] = [deck[index], deck[i]];
+      }
+      return deck;
+    },
+    ////發牌(給四個玩家)
+    dealCards(playerAmount, deck) {
+      const players = [];
+      for (let i = 0; i < playerAmount; i++) {
+        const eachPlayer = [];
+        players.push(eachPlayer);
+      }
+      for (let i = 0; i < deck.length; i++) {
+        const playerIndex = i % playerAmount;
+        players[playerIndex].push(deck[i]);
+      }
+      const sorted = players.map((cards) => this.sortCards(cards));
+      return sorted;
+    },
+    //排序牌
+    sortCards(cards) {
+      const sorted = cards.sort((cardA, cardB) => {
+        const order = ["spades", "heart", "club", "diamond"];
+        cardA = 100 * (4 - order.indexOf(cardA.suit)) + 13 - cardA.number;
+        cardB = 100 * (4 - order.indexOf(cardB.suit)) + 13 - cardB.number;
+        return cardB - cardA;
+      });
+      return sorted;
+    },
+    setNewDeck() {
+      const shuffledDeck = this.shuffle(this.buildNewDeck());
+      const deal = this.dealCards(4, shuffledDeck);
+      const deckData = db.database().ref("/deck/");
+      deckData.on("value", (deck) => {
+        if (!deck.val()) {
+          deckData.set(deal);
+        } else {
+          this.deck = deck.val();
+          this.usersDeck = this.deck[this.userIndex];
+          this.nextPlayerDeck = this.deck[
+            this.userIndex + 1 > 3 ? this.userIndex - 3 : this.userIndex + 1
+          ];
+          this.teammateDeck = this.deck[
+            this.userIndex + 2 > 3 ? this.userIndex - 2 : this.userIndex + 2
+          ];
+          this.previousPlayerDeck = this.deck[
+            this.userIndex + 3 > 3 ? this.userIndex - 1 : this.userIndex + 3
+          ];
+        }
+      });
+    },
+    //
     detectDisConnect() {
       const Firebase = db.database().ref("/");
       Firebase.onDisconnect().update({ detectDisConnect: true });
@@ -397,11 +467,11 @@ export default {
       someoneLeave.on("value", (data) => {
         const isAny = data.val();
         if (isAny) {
-          this.loadingType = "leave-countdown";
+          this.popLoading("leave-countdown");
         }
       });
     },
-    initGame() {
+    initGameData() {
       this.leaveTo = null;
       this.deck = [];
       this.usersDeck = [];
@@ -409,7 +479,6 @@ export default {
       this.teammateDeck = [];
       this.previousPlayerDeck = [];
       this.thisRoundCard = {};
-      this.dealDone = true;
       this.gameResult = "激戰中";
       this.nowPickSuit = null;
       this.isOKtoGoOn = null;
@@ -481,8 +550,31 @@ export default {
         this.nowPickSuit = pickedCard.suit;
       }
     },
-    restartGame() {
-      console.log("重新牌局！");
+    giveUpThisRound() {
+      this.resetGame();
+      this.popLoading("badluck");
+      const someoneBadLuck = db.database().ref("/someoneBadLuck/");
+      someoneBadLuck.set(true);
+    },
+    resetGame() {
+      //重新發牌
+      const deckData = db.database().ref("/deck/");
+      deckData.remove();
+      this.setNewDeck();
+      //初始化遊戲
+      this.initFireBaseData();
+      this.initGameData();
+      this.$store.commit("restartGameInit");
+    },
+    listenToRestart() {
+      const someoneBadLuck = db.database().ref("/someoneBadLuck/");
+      someoneBadLuck.on("value", (data) => {
+        const isAny = data.val();
+        if (isAny) {
+          this.popLoading("badluck");
+          someoneBadLuck.set(false);
+        }
+      });
     },
     playTheCard(card) {
       const cardIndex = this.usersDeck.indexOf(card);
@@ -538,7 +630,6 @@ export default {
     },
     popLoading(loadingType) {
       this.loadingType = loadingType;
-      this.loadingType = "change-mate-countdown";
     },
     isWin(teamInfo) {
       const nowWin = teamInfo.nowWin;
@@ -573,6 +664,7 @@ export default {
         .database()
         .ref("/nowPassedPlayerAmount/");
       const someoneLeave = db.database().ref("/someoneLeave/");
+      const someoneBadLuck = db.database().ref("/someoneBadLuck/");
       const thisRoundSuit = db.database().ref("/thisRoundSuit/");
       const nowCalledBind = db.database().ref("/nowCalledBind/");
       deck.remove();
@@ -581,6 +673,7 @@ export default {
       someoneLeave.remove();
       thisRoundSuit.remove();
       nowCalledBind.remove();
+      someoneBadLuck.remove();
     },
     removeListener() {
       const nowPlayer = db.database().ref("/nowPlayer/");
@@ -588,11 +681,13 @@ export default {
       const thisRoundSuit = db.database().ref("/thisRoundSuit/");
       const thisRoundCard = db.database().ref("/thisRoundCard/");
       const someoneLeave = db.database().ref("/someoneLeave/");
+      const someoneBadLuck = db.database().ref("/someoneBadLuck/");
       deck.off();
       nowPlayer.off();
       thisRoundSuit.off();
       thisRoundCard.off();
       someoneLeave.off();
+      someoneBadLuck.off();
     },
   },
   computed: {
@@ -677,9 +772,6 @@ export default {
     },
   },
   watch: {
-    isOKtoGoOn(isOK) {
-      if (!isOK) this.restartGame();
-    },
     gameInfo: {
       handler: function (value) {
         const team1 = value.team[0];

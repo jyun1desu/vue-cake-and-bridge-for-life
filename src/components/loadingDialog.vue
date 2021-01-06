@@ -17,7 +17,7 @@
       </div>
       <p class="text">{{ hintText }}</p>
       <p v-if="type !== 'waiting'" class="text">
-        {{ `${timerCount} 秒後離開遊戲間` }}
+        {{ countdownText }}
       </p>
     </div>
   </div>
@@ -41,10 +41,24 @@ export default {
           return "有人離開嚕！";
         case "change-mate-countdown":
           return "有人要換隊友唷";
+        case "badluck":
+          return "倒牌囉！";
         default:
           return "";
       }
-    }
+    },
+    countdownText() {
+      switch (this.type) {
+        case "leave-countdown":
+          return `${this.timerCount} 秒後離開遊戲間`;
+        case "change-mate-countdown":
+          return `${this.timerCount} 秒後離開遊戲間`;
+        case "badluck":
+          return `${this.timerCount} 秒後重新牌局`;
+        default:
+          return "";
+      }
+    },
   },
   methods: {
     leaveGame() {
@@ -74,6 +88,9 @@ export default {
               break;
             case "change-mate-countdown":
               this.toWaitingRoom();
+              break;
+            case "badluck":
+              this.$emit('close')
               break;
             default:
               throw new Error();

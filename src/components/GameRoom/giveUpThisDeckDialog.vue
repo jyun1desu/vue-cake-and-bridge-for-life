@@ -3,11 +3,11 @@
     <div class="dialog">
       <div class="hint_text">
         <h4>OOPS!</h4>
-        <p>看起來你似乎可以倒牌，要倒嗎？</p>
+        <p>看起來可以倒牌捏，要倒嗎？</p>
       </div>
       <div class="button_area">
         <button @click="$emit('continueGame')" class="no">不倒</button>
-        <button @click="$emit('restartGame')" class="yes">倒！</button>
+        <button @click="$emit('giveUp')" class="yes">倒！</button>
       </div>
     </div>
   </div>

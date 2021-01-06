@@ -84,16 +84,13 @@ export default {
     LoadingDialog,
   },
   created() {
+    //初始化
+    this.initReady();
+    this.setExistTeam();
     //偵測斷線
     this.detectDisConnect();
-    //隊伍
+    //監聽隊伍選擇
     const nowPlayers = db.database().ref("/playersInfo/");
-    nowPlayers.once("value", (data) => {
-      const playersArray = data.val();
-      const user = playersArray[this.userIndex];
-      this.chosenTeam = user.team;
-    });
-
     nowPlayers.on("value", (data) => {
       const nowPlayers = data.val();
       this.players = data.val();
@@ -110,13 +107,11 @@ export default {
         });
       }
     });
-    const userRef = "/playersInfo/" + this.userIndex;
-    const userInfo = db.database().ref(userRef);
-    userInfo.update({ OKtoPlay: false, calledBind: [] });
   },
   beforeRouteLeave() {
     const nowPlayers = db.database().ref("/playersInfo/");
     nowPlayers.off();
+    this.initReady();
   },
   data() {
     return {
@@ -128,6 +123,19 @@ export default {
     };
   },
   methods: {
+    initReady() {
+      const userRef = "/playersInfo/" + this.userIndex;
+      const userInfo = db.database().ref(userRef);
+      userInfo.update({ OKtoPlay: false, calledBind: [] });
+    },
+    setExistTeam() {
+      const nowPlayers = db.database().ref("/playersInfo/");
+      nowPlayers.once("value", (data) => {
+        const playersArray = data.val();
+        const user = playersArray[this.userIndex];
+        this.chosenTeam = user.team;
+      });
+    },
     detectDisConnect() {
       const Firebase = db.database().ref("/");
       Firebase.onDisconnect().update({ detectDisConnect: true });
@@ -162,65 +170,12 @@ export default {
         const nowPlayers = data.val();
         const OKAmount = nowPlayers.filter((player) => player.OKtoPlay === true)
           .length;
-        //最後一個點擊進入遊戲的玩家為第一輪第一個玩家，進入同時洗牌、發牌
+        //最後一個點擊進入遊戲的玩家為第一輪第一個玩家
         if (OKAmount === 4) {
           this.$store.commit("assignFirstPlayer", this.userName);
           db.database().ref("/nowPlayer/").set(this.userName);
-          const shuffledDeck = this.shuffle(this.buildNewDeck());
-          const deal = this.dealCards(4, shuffledDeck);
-          db.database().ref("/deck/").set(deal);
         }
       });
-    },
-    ////建立新牌組
-    buildNewDeck() {
-      const suit = ["spades", "heart", "diamond", "club"];
-      const number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
-      const deck = [];
-      for (let i = 0; i < suit.length; i++) {
-        let card = {};
-        for (let j = 0; j < number.length; j++) {
-          card = {
-            suit: suit[i],
-            number: number[j],
-          };
-          deck.push(card);
-        }
-      }
-      return deck;
-    },
-    ////洗牌
-    shuffle(deck) {
-      let i = deck.length;
-      while (i > 1) {
-        let index = Math.floor(Math.random() * i--);
-        [deck[i], deck[index]] = [deck[index], deck[i]];
-      }
-      return deck;
-    },
-    ////發牌(給四個玩家)
-    dealCards(playerAmount, deck) {
-      const players = [];
-      for (let i = 0; i < playerAmount; i++) {
-        const eachPlayer = [];
-        players.push(eachPlayer);
-      }
-      for (let i = 0; i < deck.length; i++) {
-        const playerIndex = i % playerAmount;
-        players[playerIndex].push(deck[i]);
-      }
-      const sorted = players.map((cards) => this.sortCards(cards));
-      return sorted;
-    },
-    //排序牌
-    sortCards(cards) {
-      const sorted = cards.sort((cardA, cardB) => {
-        const order = ["spades", "heart", "club", "diamond"];
-        cardA = 100 * (4 - order.indexOf(cardA.suit)) + 13 - cardA.number;
-        cardB = 100 * (4 - order.indexOf(cardB.suit)) + 13 - cardB.number;
-        return cardB - cardA;
-      });
-      return sorted;
     },
   },
   computed: {
