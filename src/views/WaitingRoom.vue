@@ -106,7 +106,7 @@ export default {
     });
     const userRef = "/playersInfo/" + this.userIndex;
     const userInfo = db.database().ref(userRef);
-    userInfo.update({ OKtoPlay: false })
+    userInfo.update({ OKtoPlay: false ,calledBind:[]})
   },
   data() {
     return {

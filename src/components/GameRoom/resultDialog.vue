@@ -13,7 +13,7 @@
         >贏啦～
       </p>
       <div class="button_area">
-        <button @click="restartGame" class="change_mate">更換隊友</button>
+        <button @click="changeMate" class="change_mate">更換隊友</button>
         <button @click="restartGame" class="play">再玩一局</button>
         <button @click="leaveGame" class="leave">翻桌不玩</button>
       </div>
@@ -22,14 +22,30 @@
 </template>
 
 <script>
+import LoadingDialog from "../loadingDialog.vue";
 export default {
   props: ["game-result"],
+  computed: {
+    userName() {
+      return this.$store.state.userName;
+    },
+  },
   methods: {
     restartGame() {
       console.log("再來一局");
     },
     leaveGame() {
-      console.log("走了走了");
+      this.$emit("player-leave");
+      this.$router.push({
+        name: "Home",
+      });
+    },
+    changeMate() {
+      this.$emit("team-mate-change");
+      this.$router.push({
+        name: "WaitingRoom",
+        params: { userName: this.userName },
+      });
     },
   },
 };

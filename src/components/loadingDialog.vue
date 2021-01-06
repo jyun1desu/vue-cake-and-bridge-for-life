@@ -45,11 +45,20 @@ export default {
           return "";
       }
     },
+    userName(){
+      return this.$store.state.userName
+    }
   },
   methods: {
     leaveGame() {
       this.$router.push({
         name: "Home",
+      });
+    },
+    toWaitingRoom() {
+      this.$router.push({
+        name: "WaitingRoom",
+        params: { userName: this.userName },
       });
     },
   },
@@ -61,12 +70,13 @@ export default {
             this.timerCount--;
           }, 1000);
         }
-        if (value === 0){
+        if (value === 0) {
           switch (this.type) {
             case "leave-countdown":
               this.leaveGame();
               break;
             case "change-mate-countdown":
+              this.toWaitingRoom();
               break;
             default:
               throw new Error();

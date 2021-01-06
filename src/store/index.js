@@ -24,14 +24,13 @@ export default createStore({
       }
     },
     nowPassedPlayer: 0,
-    nowPlayingPlayer: '',
-    thisRoundOpeningLead: null,
     thisRoundSuit: '',
-    userName: '',
-    players: [],
     wonTricks: [],
-    userIndex: '',
     userCalledBinds:[],
+    nowPlayingPlayer: '',
+    players: [],
+    userName: '',
+    userIndex: '',
   },
   getters: {
     nextPlayer(state) {
@@ -103,7 +102,33 @@ export default createStore({
     },
     updateWonTricks(state,cards){
       state.wonTricks.push(cards)
-    }
+    },
+    restartGameInit(state){
+      state.gameInfo =  {
+        trump: null,
+        team: [{
+            nowWin: 0,
+            shouldWin: 7,
+          },
+          {
+            nowWin: 0,
+            shouldWin: 7,
+          }
+        ],
+      };
+      state.nowBinding =  {
+        whoCalled: '',
+        bind: {
+          number: 0,
+          suit: "♣"
+        }
+      };
+      state.nowPassedPlayer = 0;
+      state.thisRoundSuit =  '';
+      state.wonTricks =  [];
+      state.userCalledBinds = [];
+      state.nowPlayingPlayer =  '';
+    },
   },
   actions: {},
   modules: {}

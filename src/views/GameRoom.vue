@@ -17,9 +17,14 @@
         @continueGame="isOKtoGoOn = true"
         @restartGame="isOKtoGoOn = false"
       />
-      <ResultBox v-if="gameResult !== '激戰中'" :game-result="gameResult" />
+      <ResultBox
+        @team-mate-change="leadAllPlayersLeave('change mate')"
+        @player-leave="leadAllPlayersLeave('leave')"
+        v-if="gameResult !== '激戰中'"
+        :game-result="gameResult"
+      />
       <ComfirmLeaveDialog
-        @player-leave="leadAllPlayersLeave"
+        @player-leave="leadAllPlayersLeave('leave')"
         @keepPlaying="showComfirmLeave = false"
         v-if="showComfirmLeave"
       />
@@ -218,51 +223,53 @@
         </div>
       </div>
     </div>
-    <div :class="{ show: showWonTricks }" class="won_tricks">
-      <p class="title">你贏的墩們</p>
-      <WonTricksBox />
-    </div>
+    <div v-if="!loadingType" class="nav">
+      <div :class="{ show: showWonTricks }" class="won_tricks">
+        <p class="title">你贏的墩們</p>
+        <WonTricksBox />
+      </div>
 
-    <div :class="{ show: showSettings }" class="settings">
-      <button class="admin_login">登入管理員</button>
-      <button
-        @click="
-          showComfirmLeave = true;
+      <div :class="{ show: showSettings }" class="settings">
+        <button class="admin_login">登入管理員</button>
+        <button
+          @click="
+            showComfirmLeave = true;
+            showSettings = false;
+          "
+          class="exit"
+        >
+          離開遊戲
+        </button>
+      </div>
+
+      <div
+        v-show="hasTrump && !showSettings"
+        :class="{ show: showWonTricks }"
+        @click.stop="
+          showWonTricks = !showWonTricks;
           showSettings = false;
         "
-        class="exit"
+        class="toggle"
       >
-        離開遊戲
-      </button>
-    </div>
-
-    <div
-      v-show="hasTrump && !showSettings"
-      :class="{ show: showWonTricks }"
-      @click.stop="
-        showWonTricks = !showWonTricks;
-        showSettings = false;
-      "
-      class="toggle"
-    >
-      <div class="icon">
-        <span class="card"></span>
-        <span class="card"></span>
+        <div class="icon">
+          <span class="card"></span>
+          <span class="card"></span>
+        </div>
       </div>
-    </div>
 
-    <div
-      v-show="!showWonTricks && !showComfirmLeave"
-      :class="{ show: showSettings }"
-      @click.stop="
-        showSettings = !showSettings;
-        showWonTricks = false;
-      "
-      class="toggle_settings"
-    >
-      <div class="icon">
-        <span class="cross vertical"></span>
-        <span class="cross horizental"></span>
+      <div
+        v-show="!showWonTricks && !showComfirmLeave"
+        :class="{ show: showSettings }"
+        @click.stop="
+          showSettings = !showSettings;
+          showWonTricks = false;
+        "
+        class="toggle_settings"
+      >
+        <div class="icon">
+          <span class="cross vertical"></span>
+          <span class="cross horizental"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -287,6 +294,9 @@ export default {
     WonTricksBox,
     ResultBox,
     LoadingDialog,
+  },
+  created() {
+    this.initGame();
   },
   mounted() {
     const nowPlayer = db.database().ref("/nowPlayer/");
@@ -344,15 +354,22 @@ export default {
     });
     const someoneLeave = db.database().ref("/someoneLeave/");
     someoneLeave.on("value", (data) => {
-      const isAny = data.val();
-      if (isAny) {
-        this.popLeaveLoading();
+      const type = data.val();
+      switch (type) {
+        case "leave":
+          this.popLeaveLoading();
+          break;
+        case "change mate":
+          this.popChangeMateLoading();
+          break;
+        default:
+          break;
       }
     });
   },
   data() {
     return {
-      clearAll: false,
+      leaveTo: null,
       deck: [],
       usersDeck: [],
       nextPlayerDeck: [],
@@ -372,6 +389,25 @@ export default {
     };
   },
   methods: {
+    initGame() {
+      this.leaveTo = null;
+      this.deck = [];
+      this.usersDeck = [];
+      this.nextPlayerDeck = [];
+      this.teammateDeck = [];
+      this.previousPlayerDeck = [];
+      this.thisRoundCard = {};
+      this.dealDone = true;
+      this.gameResult = "激戰中";
+      this.nowPickSuit = null;
+      this.isOKtoGoOn = null;
+      this.userPlayedCard = "";
+      this.showWonTricks = false;
+      this.showSettings = false;
+      this.showComfirmLeave = false;
+      this.firstLeave = null;
+      this.loadingType = null;
+    },
     clearCardTable() {
       this.userPlayedCard = "";
       this.thisRoundCard = {};
@@ -476,10 +512,20 @@ export default {
         params: { userName: this.userName },
       });
     },
-    leadAllPlayersLeave() {
+    leadAllPlayersLeave(type) {
       this.firstLeave = true;
       const someoneLeave = db.database().ref("/someoneLeave/");
-      someoneLeave.set(true);
+      switch (type) {
+        case "leave":
+          someoneLeave.set("leave");
+          break;
+        case "change mate":
+          someoneLeave.set("change mate");
+          break;
+      }
+    },
+    popChangeMateLoading() {
+      this.loadingType = "change-mate-countdown";
     },
     popLeaveLoading() {
       this.loadingType = "leave-countdown";
@@ -627,23 +673,41 @@ export default {
     },
   },
   beforeRouteLeave(to, from, next) {
-    if (to.path === "/") {
-      this.clearAll = true;
+    switch (to.name) {
+      case "Home":
+        this.leaveTo = "Home";
+        break;
+      case "WaitingRoom":
+        this.leaveTo = "WaitingRoom";
+        break;
     }
     next();
   },
   unmounted() {
     const nowPlayer = db.database().ref("/nowPlayer/");
+    const nowCalledBind = db.database().ref("/nowCalledBind/");
     const deck = db.database().ref("/deck/");
     const thisRoundSuit = db.database().ref("/thisRoundSuit/");
+    const nowPassedPlayerAmount = db.database().ref("/nowPassedPlayerAmount/");
     const someoneLeave = db.database().ref("/someoneLeave/");
-    nowPlayer.off();
     deck.off();
     thisRoundSuit.off();
-    someoneLeave.off();
-    if (this.clearAll && !this.firstLeave) {
+    nowPlayer.remove();
+    nowPassedPlayerAmount.remove();
+    someoneLeave.remove();
+    this.$store.commit("restartGameInit");
+    if (!this.firstLeave) {
       const gameData = db.database().ref("/");
-      gameData.set({ nowPlayerAmount: 0 });
+      switch (this.leaveTo) {
+        case "Home":
+          gameData.set({ nowPlayerAmount: 0 });
+          break;
+        case "WaitingRoom":
+          deck.remove();
+          thisRoundSuit.remove();
+          nowCalledBind.remove();
+          break;
+      }
     }
   },
 };
