@@ -136,7 +136,6 @@ export default {
         const isAny = data.val();
         if (isAny) {
           this.loadingType = "leave-countdown";
-          Firebase.onDisconnect().cancel();
         }
       });
     },

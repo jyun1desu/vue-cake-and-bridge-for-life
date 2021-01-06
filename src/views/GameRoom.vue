@@ -1,7 +1,8 @@
 <template>
   <div class="game_room">
     <LoadingDialog v-if="loadingType" :type="loadingType" />
-    <div class="game"
+    <div
+      class="game"
       v-if="!loadingType"
       @click="
         nowPickSuit = null;
@@ -296,6 +297,7 @@ export default {
   },
   created() {
     this.initGame();
+    this.detectDisConnect();
   },
   mounted() {
     const nowPlayer = db.database().ref("/nowPlayer/");
@@ -388,6 +390,17 @@ export default {
     };
   },
   methods: {
+    detectDisConnect() {
+      const Firebase = db.database().ref("/");
+      Firebase.onDisconnect().update({ detectDisConnect: true });
+      const someoneLeave = db.database().ref("/detectDisConnect/");
+      someoneLeave.on("value", (data) => {
+        const isAny = data.val();
+        if (isAny) {
+          this.loadingType = "leave-countdown";
+        }
+      });
+    },
     initGame() {
       this.leaveTo = null;
       this.deck = [];
@@ -698,6 +711,7 @@ export default {
     },
   },
   beforeRouteLeave(to, from, next) {
+    this.removeListener();
     switch (to.name) {
       case "Home":
         this.leaveTo = "Home";
@@ -709,7 +723,6 @@ export default {
     next();
   },
   unmounted() {
-    this.removeListener();
     this.$store.commit("restartGameInit");
     if (!this.firstLeave) {
       const gameData = db.database().ref("/");

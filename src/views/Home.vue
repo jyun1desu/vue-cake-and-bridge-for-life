@@ -29,14 +29,16 @@ import Admin from "@/components/Home/adminDialog.vue";
 export default {
   name: "Home",
   beforeRouteEnter(to, from, next) {
-    if (from.name === "WaitingRoom") {
+    if (from.path !== "/") {
       const Firebase = db.database().ref("/");
       Firebase.set({ nowPlayerAmount: 0 });
     }
     next();
   },
   mounted() {
-    this.$store.commit('leaveGameInit');
+    const Firebase = db.database().ref("/");
+    Firebase.onDisconnect().cancel();
+    this.$store.commit("leaveGameInit");
     const nowPlayerAmount = db.database().ref("nowPlayerAmount");
     nowPlayerAmount.on("value", (s) => {
       const data = s.val();

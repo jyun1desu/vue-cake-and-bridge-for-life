@@ -44,9 +44,6 @@ export default {
         default:
           return "";
       }
-    },
-    userName(){
-      return this.$store.state.userName
     }
   },
   methods: {
