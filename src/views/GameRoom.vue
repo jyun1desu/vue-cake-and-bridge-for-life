@@ -7,9 +7,11 @@
     <LoadingDialog
       @close="popLoading(null)"
       :type="loadingType"
-      v-if="loadingType === 'change mate' || loadingType === 'badluck'"
+      v-if="
+        loadingType === 'change-mate-countdown' || loadingType === 'badluck'
+      "
     />
-    <LoadingDialog type="'waiting'" v-if="loadingType === 'waiting'" />
+    <LoadingDialog :type="loadingType" v-if="loadingType === 'waiting'" />
     <div
       class="game"
       v-if="!loadingType"
@@ -22,14 +24,15 @@
     >
       <BiddingDialog v-if="!hasTrump" />
       <GiveUpThisDeckDialog
-        v-if="badLuck&&!isOKtoGoOn"
+        v-if="badLuck && !isOKtoGoOn"
         @continueGame="isOKtoGoOn = true"
         @giveUp="giveUpThisRound"
       />
       <ResultBox
+        @restart-game="popLoading('waiting')"
         @team-mate-change="leadAllPlayersLeave('change mate')"
         @player-leave="leadAllPlayersLeave('leave')"
-        v-if="gameResult !== '激戰中'"
+        v-if="gameResult !== '激戰'"
         :game-result="gameResult"
       />
       <ComfirmLeaveDialog
@@ -310,59 +313,8 @@ export default {
     this.setNewDeck();
   },
   mounted() {
-    const nowPlayer = db.database().ref("/nowPlayer/");
-    nowPlayer.on("value", (data) => {
-      this.$store.commit("switchToNextPlayer", data.val());
-    });
-    const thisRoundSuit = db.database().ref("/thisRoundSuit/");
-    thisRoundSuit.on("value", (data) => {
-      const suit = data.val();
-      this.$store.commit("assignThisRoundSuit", suit);
-    });
-    const thisRoundCard = db.database().ref("/thisRoundCard/");
-    thisRoundCard.on("value", (data) => {
-      const cards = data.val();
-      if (cards) {
-        this.thisRoundCard = cards;
-      }
-      //檯面上有四張牌
-      if (cards && Object.keys(cards).length === 4) {
-        const cardsArray = Object.values(cards);
-        const wonCard = this.highCard(
-          this.hasTrump,
-          this.thisRoundSuit,
-          cardsArray
-        );
-        const wonCardIndex = cardsArray.findIndex((card) => card === wonCard);
-        const wonPlayer = Object.keys(cards)[wonCardIndex];
-        //贏家收這墩
-        if (wonPlayer === this.userName) {
-          this.$store.commit("updateWonTricks", cardsArray);
-        }
-        //清空牌桌，指定下一個贏家
-        this.initRound = setTimeout(() => {
-          const nowPlayer = db.database().ref("/nowPlayer/");
-          nowPlayer.set(wonPlayer);
-          this.clearCardTable();
-          //贏的隊加一分
-          this.winThisRound(wonPlayer);
-        }, 2500);
-      }
-    });
-    const someoneLeave = db.database().ref("/someoneLeave/");
-    someoneLeave.on("value", (data) => {
-      const type = data.val();
-      switch (type) {
-        case "leave":
-          this.popLoading("leave-countdown");
-          break;
-        case "change mate":
-          this.popLoading("change-mate-countdown");
-          break;
-        default:
-          break;
-      }
-    });
+    this.listenToGameDataUpdate();
+    this.listenToPlayerLeave();
     this.listenToRestart();
   },
   data() {
@@ -460,17 +412,6 @@ export default {
       });
     },
     //
-    detectDisConnect() {
-      const Firebase = db.database().ref("/");
-      Firebase.onDisconnect().update({ detectDisConnect: true });
-      const someoneLeave = db.database().ref("/detectDisConnect/");
-      someoneLeave.on("value", (data) => {
-        const isAny = data.val();
-        if (isAny) {
-          this.popLoading("leave-countdown");
-        }
-      });
-    },
     initGameData() {
       this.leaveTo = null;
       this.deck = [];
@@ -566,16 +507,6 @@ export default {
       this.initGameData();
       this.$store.commit("restartGameInit");
     },
-    listenToRestart() {
-      const someoneBadLuck = db.database().ref("/someoneBadLuck/");
-      someoneBadLuck.on("value", (data) => {
-        const isAny = data.val();
-        if (isAny) {
-          this.popLoading("badluck");
-          someoneBadLuck.set(false);
-        }
-      });
-    },
     playTheCard(card) {
       const cardIndex = this.usersDeck.indexOf(card);
       this.usersDeck.splice(cardIndex, 1);
@@ -657,6 +588,7 @@ export default {
           break;
       }
     },
+    //firebase
     initFireBaseData() {
       const deck = db.database().ref("/deck/");
       const nowPlayer = db.database().ref("/nowPlayer/");
@@ -674,6 +606,84 @@ export default {
       thisRoundSuit.remove();
       nowCalledBind.remove();
       someoneBadLuck.remove();
+    },
+    detectDisConnect() {
+      const Firebase = db.database().ref("/");
+      Firebase.onDisconnect().update({ detectDisConnect: true });
+      const someoneLeave = db.database().ref("/detectDisConnect/");
+      someoneLeave.on("value", (data) => {
+        const isAny = data.val();
+        if (isAny) {
+          this.popLoading("leave-countdown");
+        }
+      });
+    },
+    listenToPlayerLeave() {
+      const someoneLeave = db.database().ref("/someoneLeave/");
+      someoneLeave.on("value", (data) => {
+        const type = data.val();
+        switch (type) {
+          case "leave":
+            this.popLoading("leave-countdown");
+            break;
+          case "change mate":
+            this.popLoading("change-mate-countdown");
+            break;
+          default:
+            break;
+        }
+      });
+    },
+    listenToGameDataUpdate() {
+      const nowPlayer = db.database().ref("/nowPlayer/");
+      nowPlayer.on("value", (data) => {
+        this.$store.commit("switchToNextPlayer", data.val());
+      });
+      const thisRoundSuit = db.database().ref("/thisRoundSuit/");
+      thisRoundSuit.on("value", (data) => {
+        const suit = data.val();
+        this.$store.commit("assignThisRoundSuit", suit);
+      });
+      const thisRoundCard = db.database().ref("/thisRoundCard/");
+      thisRoundCard.on("value", (data) => {
+        const cards = data.val();
+        if (cards) {
+          this.thisRoundCard = cards;
+        }
+        //檯面上有四張牌
+        if (cards && Object.keys(cards).length === 4) {
+          const cardsArray = Object.values(cards);
+          const wonCard = this.highCard(
+            this.hasTrump,
+            this.thisRoundSuit,
+            cardsArray
+          );
+          const wonCardIndex = cardsArray.findIndex((card) => card === wonCard);
+          const wonPlayer = Object.keys(cards)[wonCardIndex];
+          //贏家收這墩
+          if (wonPlayer === this.userName) {
+            this.$store.commit("updateWonTricks", cardsArray);
+          }
+          //清空牌桌，指定下一個贏家
+          this.initRound = setTimeout(() => {
+            const nowPlayer = db.database().ref("/nowPlayer/");
+            nowPlayer.set(wonPlayer);
+            this.clearCardTable();
+            //贏的隊加一分
+            this.winThisRound(wonPlayer);
+          }, 2500);
+        }
+      });
+    },
+    listenToRestart() {
+      const someoneBadLuck = db.database().ref("/someoneBadLuck/");
+      someoneBadLuck.on("value", (data) => {
+        const isAny = data.val();
+        if (isAny) {
+          this.popLoading("badluck");
+          someoneBadLuck.set(false);
+        }
+      });
     },
     removeListener() {
       const nowPlayer = db.database().ref("/nowPlayer/");

@@ -22,17 +22,26 @@
 </template>
 
 <script>
-import LoadingDialog from "../loadingDialog.vue";
+import db from "../../db.js";
 export default {
   props: ["game-result"],
   computed: {
     userName() {
       return this.$store.state.userName;
     },
+    userIndex() {
+      return this.$store.state.userIndex;
+    },
   },
   methods: {
+    OKtoNextPlay() {
+      const userRef = "/playersInfo/" + this.userIndex;
+      const userInfo = db.database().ref(userRef);
+      userInfo.update({ OKtoPlay: true });
+    },
     restartGame() {
-      console.log("再來一局");
+      this.$emit("restart-game");
+      this.OKtoNextPlay();
     },
     leaveGame() {
       this.$emit("player-leave");

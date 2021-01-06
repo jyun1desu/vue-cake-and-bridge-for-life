@@ -105,6 +105,7 @@ export default {
 
 <style lang="scss" scoped>
 .loading_page {
+  z-index:-1;
   @include translucent_mask;
   .dialog {
     width: 40%;
