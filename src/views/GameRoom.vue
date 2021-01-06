@@ -1,7 +1,7 @@
 <template>
   <div class="game_room">
     <LoadingDialog v-if="loadingType" :type="loadingType" />
-    <div
+    <div class="game"
       v-if="!loadingType"
       @click="
         nowPickSuit = null;
@@ -9,7 +9,6 @@
         showSettings = false;
       "
       :class="{ half_seen: showWonTricks || showSettings }"
-      class="game"
     >
       <BiddingDialog v-if="!hasTrump" />
       <GiveUpThisDeckDialog
@@ -357,10 +356,10 @@ export default {
       const type = data.val();
       switch (type) {
         case "leave":
-          this.popLeaveLoading();
+          this.popLoading("leave-countdown");
           break;
         case "change mate":
-          this.popChangeMateLoading();
+          this.popLoading("change-mate-countdown");
           break;
         default:
           break;
@@ -524,11 +523,9 @@ export default {
           break;
       }
     },
-    popChangeMateLoading() {
+    popLoading(loadingType) {
+      this.loadingType = loadingType;
       this.loadingType = "change-mate-countdown";
-    },
-    popLeaveLoading() {
-      this.loadingType = "leave-countdown";
     },
     isWin(teamInfo) {
       const nowWin = teamInfo.nowWin;
@@ -555,6 +552,34 @@ export default {
           this.previousPlayerDeck.splice(0, 1);
           break;
       }
+    },
+    initFireBaseData() {
+      const deck = db.database().ref("/deck/");
+      const nowPlayer = db.database().ref("/nowPlayer/");
+      const nowPassedPlayerAmount = db
+        .database()
+        .ref("/nowPassedPlayerAmount/");
+      const someoneLeave = db.database().ref("/someoneLeave/");
+      const thisRoundSuit = db.database().ref("/thisRoundSuit/");
+      const nowCalledBind = db.database().ref("/nowCalledBind/");
+      deck.remove();
+      nowPlayer.remove();
+      nowPassedPlayerAmount.remove();
+      someoneLeave.remove();
+      thisRoundSuit.remove();
+      nowCalledBind.remove();
+    },
+    removeListener() {
+      const nowPlayer = db.database().ref("/nowPlayer/");
+      const deck = db.database().ref("/deck/");
+      const thisRoundSuit = db.database().ref("/thisRoundSuit/");
+      const thisRoundCard = db.database().ref("/thisRoundCard/");
+      const someoneLeave = db.database().ref("/someoneLeave/");
+      deck.off();
+      nowPlayer.off();
+      thisRoundSuit.off();
+      thisRoundCard.off();
+      someoneLeave.off();
     },
   },
   computed: {
@@ -684,17 +709,7 @@ export default {
     next();
   },
   unmounted() {
-    const nowPlayer = db.database().ref("/nowPlayer/");
-    const nowCalledBind = db.database().ref("/nowCalledBind/");
-    const deck = db.database().ref("/deck/");
-    const thisRoundSuit = db.database().ref("/thisRoundSuit/");
-    const nowPassedPlayerAmount = db.database().ref("/nowPassedPlayerAmount/");
-    const someoneLeave = db.database().ref("/someoneLeave/");
-    deck.off();
-    thisRoundSuit.off();
-    nowPlayer.remove();
-    nowPassedPlayerAmount.remove();
-    someoneLeave.remove();
+    this.removeListener();
     this.$store.commit("restartGameInit");
     if (!this.firstLeave) {
       const gameData = db.database().ref("/");
@@ -703,9 +718,7 @@ export default {
           gameData.set({ nowPlayerAmount: 0 });
           break;
         case "WaitingRoom":
-          deck.remove();
-          thisRoundSuit.remove();
-          nowCalledBind.remove();
+          this.initFireBaseData();
           break;
       }
     }
