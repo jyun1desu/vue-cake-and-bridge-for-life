@@ -1,7 +1,11 @@
 <template>
-  <LoadingDialog type="waiting" v-if="showWaitingDialog === true" />
   <div class="page">
-    <div class="wait_room">
+    <LoadingDialog
+      type="leave-countdown"
+      v-if="loadingType === 'leave-countdown'"
+    />
+    <LoadingDialog :type="'waiting'" v-if="loadingType === 'waiting'" />
+    <div v-if="loadingType !== 'leave-countdown'" class="wait_room">
       <div class="players">
         <div
           :class="{
@@ -80,6 +84,8 @@ export default {
     LoadingDialog,
   },
   created() {
+    //偵測斷線
+    this.detectDisConnect();
     //隊伍
     const nowPlayers = db.database().ref("/playersInfo/");
     nowPlayers.once("value", (data) => {
@@ -97,7 +103,7 @@ export default {
       const OKAmount = nowPlayers.filter((player) => player.OKtoPlay === true)
         .length;
       if (OKAmount === 4) {
-        this.showWaitingDialog = false;
+        this.loadingType = null;
         this.$router.push({
           name: "GameRoom",
           params: { userName: this.userName },
@@ -106,7 +112,11 @@ export default {
     });
     const userRef = "/playersInfo/" + this.userIndex;
     const userInfo = db.database().ref(userRef);
-    userInfo.update({ OKtoPlay: false ,calledBind:[]})
+    userInfo.update({ OKtoPlay: false, calledBind: [] });
+  },
+  beforeRouteLeave() {
+    const nowPlayers = db.database().ref("/playersInfo/");
+    nowPlayers.off();
   },
   data() {
     return {
@@ -114,10 +124,22 @@ export default {
       playerOrder: [],
       chosenTeam: "",
       team: [],
-      showWaitingDialog: false,
+      loadingType: null,
     };
   },
   methods: {
+    detectDisConnect() {
+      const Firebase = db.database().ref("/");
+      Firebase.onDisconnect().update({ detectDisConnect: true });
+      const someoneLeave = db.database().ref("/detectDisConnect/");
+      someoneLeave.on("value", (data) => {
+        const isAny = data.val();
+        if (isAny) {
+          this.loadingType = "leave-countdown";
+          Firebase.onDisconnect().cancel();
+        }
+      });
+    },
     chooseTeam(team) {
       this.chosenTeam = team;
       const user = "/playersInfo/" + this.userIndex;
@@ -129,7 +151,7 @@ export default {
       const userRef = "/playersInfo/" + this.userIndex;
       const userInfo = db.database().ref(userRef);
       userInfo.update({ OKtoPlay: true });
-      this.showWaitingDialog = true;
+      this.loadingType = "waiting";
 
       const team1 = this.players.filter((player) => player.team === "team1");
       const team2 = this.players.filter((player) => player.team === "team2");
@@ -140,7 +162,7 @@ export default {
       nowPlayers.once("value", (data) => {
         const nowPlayers = data.val();
         const OKAmount = nowPlayers.filter((player) => player.OKtoPlay === true)
-        .length;
+          .length;
         //最後一個點擊進入遊戲的玩家為第一輪第一個玩家，進入同時洗牌、發牌
         if (OKAmount === 4) {
           this.$store.commit("assignFirstPlayer", this.userName);

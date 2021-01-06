@@ -28,7 +28,15 @@ import Logo from "@/components/Home/Logo.vue";
 import Admin from "@/components/Home/adminDialog.vue";
 export default {
   name: "Home",
+  beforeRouteEnter(to, from, next) {
+    if (from.name === "WaitingRoom") {
+      const Firebase = db.database().ref("/");
+      Firebase.set({ nowPlayerAmount: 0 });
+    }
+    next();
+  },
   mounted() {
+    this.$store.commit('leaveGameInit');
     const nowPlayerAmount = db.database().ref("nowPlayerAmount");
     nowPlayerAmount.on("value", (s) => {
       const data = s.val();
@@ -77,7 +85,7 @@ export default {
         }`,
       });
       this.$store.commit("setUserName", this.userName);
-      this.$store.commit("setUserIndex", this.nowPlayersAmount-1);
+      this.$store.commit("setUserIndex", this.nowPlayersAmount - 1);
     },
     resetGame() {
       const gameData = db.database().ref("/");

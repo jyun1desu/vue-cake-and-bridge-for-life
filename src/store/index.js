@@ -129,6 +129,11 @@ export default createStore({
       state.userCalledBinds = [];
       state.nowPlayingPlayer =  '';
     },
+    leaveGameInit(state){
+      state.players =  [];
+      state.userName=  '';
+      state.userIndex= '';
+    }
   },
   actions: {},
   modules: {}
