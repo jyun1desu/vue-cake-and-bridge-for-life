@@ -11,10 +11,9 @@
         loadingType === 'change-mate-countdown' || loadingType === 'badluck'
       "
     />
-    <LoadingDialog :type="loadingType" v-if="loadingType === 'waiting'" />
     <div
       class="game"
-      v-if="!loadingType"
+      v-if="!loadingType || loadingType === 'waiting'"
       @click="
         nowPickSuit = null;
         showWonTricks = false;
@@ -31,8 +30,8 @@
       <ResultBox
         @restart-game="popLoading('waiting')"
         @team-mate-change="leadAllPlayersLeave('change mate')"
-        @player-leave="leadAllPlayersLeave('leave')"
-        v-if="gameResult !== '激戰'"
+        @want-to-leave="showComfirmLeave=true"
+        v-if="gameResult !== '激戰中'"
         :game-result="gameResult"
       />
       <ComfirmLeaveDialog
@@ -284,6 +283,7 @@
         </div>
       </div>
     </div>
+    <LoadingDialog :type="loadingType" v-if="loadingType === 'waiting'" />
   </div>
 </template>
 
@@ -339,7 +339,7 @@ export default {
     };
   },
   methods: {
-    ////建立新牌組
+    ////發牌系列
     buildNewDeck() {
       const suit = ["spades", "heart", "diamond", "club"];
       const number = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
@@ -356,7 +356,7 @@ export default {
       }
       return deck;
     },
-    ////洗牌
+    //洗牌
     shuffle(deck) {
       let i = deck.length;
       while (i > 1) {
@@ -365,7 +365,7 @@ export default {
       }
       return deck;
     },
-    ////發牌(給四個玩家)
+    //發牌(給四個玩家)
     dealCards(playerAmount, deck) {
       const players = [];
       for (let i = 0; i < playerAmount; i++) {
@@ -498,14 +498,13 @@ export default {
       someoneBadLuck.set(true);
     },
     resetGame() {
-      //重新發牌
-      const deckData = db.database().ref("/deck/");
-      deckData.remove();
-      this.setNewDeck();
       //初始化遊戲
       this.initFireBaseData();
       this.initGameData();
       this.$store.commit("restartGameInit");
+      //重新發牌
+      const deckData = db.database().ref("/deck/");
+      this.setNewDeck();
     },
     playTheCard(card) {
       const cardIndex = this.usersDeck.indexOf(card);
@@ -599,6 +598,9 @@ export default {
       const someoneBadLuck = db.database().ref("/someoneBadLuck/");
       const thisRoundSuit = db.database().ref("/thisRoundSuit/");
       const nowCalledBind = db.database().ref("/nowCalledBind/");
+      const userRef = "/playersInfo/" + this.userIndex;
+      const userInfo = db.database().ref(userRef);
+      userInfo.update({ OKtoPlay: false, calledBind: [] });
       deck.remove();
       nowPlayer.remove();
       nowPassedPlayerAmount.remove();
@@ -635,6 +637,16 @@ export default {
       });
     },
     listenToGameDataUpdate() {
+      const nowPlayers = db.database().ref("/playersInfo/");
+      nowPlayers.on("value", (data) => {
+        const nowPlayers = data.val();
+        const OKAmount = nowPlayers.filter((player) => player.OKtoPlay === true)
+          .length;
+        if (OKAmount === 4) {
+          this.resetGame();
+        }
+      });
+
       const nowPlayer = db.database().ref("/nowPlayer/");
       nowPlayer.on("value", (data) => {
         this.$store.commit("switchToNextPlayer", data.val());

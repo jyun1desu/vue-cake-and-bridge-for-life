@@ -78,6 +78,9 @@ export default {
   components: {
     CallList,
   },
+  created(){
+    this.initBindData();
+  },
   mounted() {
     const nowBind = db.database().ref("/nowCalledBind/");
     const players = db.database().ref("/playersInfo/");
@@ -130,6 +133,14 @@ export default {
     };
   },
   methods: {
+    initBindData(){
+      this.userNowPickedBind =  "";
+      this.callTrump =  {
+        trick: [1, 2, 3, 4, 5, 6],
+        suit: ["♣", "♦", "♥", "♠"]
+      };
+      this.userIsPassed = false;
+    },
     chooseBind(chosen) {
       const sameNumber = this.userNowPickedBind.number === chosen.number;
       const sameSuit = this.userNowPickedBind.suit === chosen.suit;

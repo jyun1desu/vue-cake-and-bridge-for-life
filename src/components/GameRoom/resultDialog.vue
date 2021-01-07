@@ -44,10 +44,7 @@ export default {
       this.OKtoNextPlay();
     },
     leaveGame() {
-      this.$emit("player-leave");
-      this.$router.push({
-        name: "Home",
-      });
+      this.$emit("want-to-leave");
     },
     changeMate() {
       this.$emit("team-mate-change");

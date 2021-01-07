@@ -29,7 +29,7 @@ export default {
   props: ["type"],
   data() {
     return {
-      timerCount: 5,
+      timerCount: 3,
     };
   },
   computed: {

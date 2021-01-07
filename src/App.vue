@@ -2,15 +2,6 @@
   <router-view />
 </template>
 
-<script>
-import { computed } from 'vue';
-export default {
-  computed:{
-
-  }
-}
-</script>
-
 <style lang="scss">
 @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=M+PLUS+Rounded+1c:wght@300;400&display=swap');
 * {

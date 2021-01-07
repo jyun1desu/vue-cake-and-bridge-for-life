@@ -89,7 +89,7 @@ export default {
     this.setExistTeam();
     //偵測斷線
     this.detectDisConnect();
-    //監聽隊伍選擇
+    //監聽隊伍選擇、ready狀態
     const nowPlayers = db.database().ref("/playersInfo/");
     nowPlayers.on("value", (data) => {
       const nowPlayers = data.val();
