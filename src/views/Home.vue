@@ -111,7 +111,10 @@ $button-no-vacany: #90bf81;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 50px;
+  @include RWD($laptop) {
+    width: 50%;
+    margin:0 auto;
+  }
   p {
     color: $title_font_color;
     font-size: 25px;
