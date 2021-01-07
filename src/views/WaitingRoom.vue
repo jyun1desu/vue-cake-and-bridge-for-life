@@ -90,7 +90,7 @@ export default {
     //偵測斷線
     this.detectDisConnect();
     //監聽隊伍選擇、ready狀態
-    const nowPlayers = db.database().ref("/playersInfo/");
+    const nowPlayers = db.database().ref(`/${this.roomName}/playersInfo/`);
     nowPlayers.on("value", (data) => {
       const nowPlayers = data.val();
       this.players = data.val();
@@ -109,8 +109,7 @@ export default {
     });
   },
   beforeRouteLeave() {
-    const nowPlayers = db.database().ref("/playersInfo/");
-    nowPlayers.off();
+    this.removeFirebaseListener();
     this.initReady();
   },
   data() {
@@ -124,12 +123,12 @@ export default {
   },
   methods: {
     initReady() {
-      const userRef = "/playersInfo/" + this.userIndex;
+      const userRef = `/${this.roomName}/playersInfo/` + this.userIndex;
       const userInfo = db.database().ref(userRef);
       userInfo.update({ OKtoPlay: false, calledBind: [] });
     },
     setExistTeam() {
-      const nowPlayers = db.database().ref("/playersInfo/");
+      const nowPlayers = db.database().ref(`/${this.roomName}/playersInfo/`);
       nowPlayers.once("value", (data) => {
         const playersArray = data.val();
         const user = playersArray[this.userIndex];
@@ -137,9 +136,11 @@ export default {
       });
     },
     detectDisConnect() {
-      const Firebase = db.database().ref("/");
+      const Firebase = db.database().ref(`/${this.roomName}/`);
       Firebase.onDisconnect().update({ detectDisConnect: true });
-      const someoneLeave = db.database().ref("/detectDisConnect/");
+      const someoneLeave = db
+        .database()
+        .ref(`/${this.roomName}/detectDisConnect/`);
       someoneLeave.on("value", (data) => {
         const isAny = data.val();
         if (isAny) {
@@ -149,13 +150,13 @@ export default {
     },
     chooseTeam(team) {
       this.chosenTeam = team;
-      const user = "/playersInfo/" + this.userIndex;
+      const user = `/${this.roomName}/playersInfo/` + this.userIndex;
       const userTeamInfo = db.database().ref(user);
       userTeamInfo.update({ team: this.chosenTeam });
     },
     enterGame() {
       if (this.buttonWarn) return;
-      const userRef = "/playersInfo/" + this.userIndex;
+      const userRef = `/${this.roomName}/playersInfo/` + this.userIndex;
       const userInfo = db.database().ref(userRef);
       userInfo.update({ OKtoPlay: true });
       this.loadingType = "waiting";
@@ -165,7 +166,7 @@ export default {
       const orderArray = [team1[0], team2[0], team1[1], team2[1]];
       this.$store.commit("setPlayersInfo", orderArray);
       //
-      const nowPlayers = db.database().ref("/playersInfo");
+      const nowPlayers = db.database().ref(`/${this.roomName}/playersInfo/`);
       nowPlayers.once("value", (data) => {
         const nowPlayers = data.val();
         const OKAmount = nowPlayers.filter((player) => player.OKtoPlay === true)
@@ -173,12 +174,23 @@ export default {
         //最後一個點擊進入遊戲的玩家為第一輪第一個玩家
         if (OKAmount === 4) {
           this.$store.commit("assignFirstPlayer", this.userName);
-          db.database().ref("/nowPlayer/").set(this.userName);
+          db.database().ref(`/${this.roomName}/nowPlayer/`).set(this.userName);
         }
       });
     },
+    removeFirebaseListener() {
+      const someoneLeave = db
+        .database()
+        .ref(`/${this.roomName}/detectDisConnect/`);
+      someoneLeave.off();
+      const nowPlayers = db.database().ref(`/${this.roomName}/playersInfo/`);
+      nowPlayers.off();
+    },
   },
   computed: {
+    roomName() {
+      return this.$store.state.roomName;
+    },
     userIndex() {
       return this.$store.state.userIndex;
     },

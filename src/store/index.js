@@ -26,9 +26,10 @@ export default createStore({
     nowPassedPlayer: 0,
     thisRoundSuit: '',
     wonTricks: [],
-    userCalledBinds:[],
+    userCalledBinds: [],
     nowPlayingPlayer: '',
     players: [],
+    roomName: '',
     userName: '',
     userIndex: '',
   },
@@ -47,6 +48,9 @@ export default createStore({
     }
   },
   mutations: {
+    setRoomName(state, roomName) {
+      state.roomName = roomName;
+    },
     setUserIndex(state, index) {
       state.userIndex = index;
     },
@@ -54,7 +58,7 @@ export default createStore({
       state.gameInfo.trump = numberAndndSuit;
       state.nowPassedPlayer = 0
     },
-    playerPass(state,amount) {
+    playerPass(state, amount) {
       state.nowPassedPlayer = amount
     },
     updateNowBinding(state, {
@@ -90,21 +94,21 @@ export default createStore({
     assignFirstPlayer(state, player) {
       state.nowPlayingPlayer = player;
     },
-    updateUserCalledBinds(state,bind){
+    updateUserCalledBinds(state, bind) {
       state.userCalledBinds.push(bind)
     },
-    switchToNextPlayer(state,player) {
+    switchToNextPlayer(state, player) {
       state.nowPlayingPlayer = player
     },
-    addTeamScore(state,teamIndex){
+    addTeamScore(state, teamIndex) {
       const winTeam = state.gameInfo.team[teamIndex];
       winTeam.nowWin++
     },
-    updateWonTricks(state,cards){
+    updateWonTricks(state, cards) {
       state.wonTricks.push(cards)
     },
-    restartGameInit(state){
-      state.gameInfo =  {
+    restartGameInit(state) {
+      state.gameInfo = {
         trump: null,
         team: [{
             nowWin: 0,
@@ -116,7 +120,7 @@ export default createStore({
           }
         ],
       };
-      state.nowBinding =  {
+      state.nowBinding = {
         whoCalled: '',
         bind: {
           number: 0,
@@ -124,14 +128,14 @@ export default createStore({
         }
       };
       state.nowPassedPlayer = 0;
-      state.thisRoundSuit =  '';
-      state.wonTricks =  [];
+      state.thisRoundSuit = '';
+      state.wonTricks = [];
       state.userCalledBinds = [];
     },
-    leaveGameInit(state){
-      state.players =  [];
-      state.userName=  '';
-      state.userIndex= '';
+    leaveGameInit(state) {
+      state.players = [];
+      state.userName = '';
+      state.userIndex = '';
     }
   },
   actions: {},

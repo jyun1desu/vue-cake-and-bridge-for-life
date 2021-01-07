@@ -10,11 +10,7 @@
     <form id="name" class="user_input">
       <p>請輸入名字</p>
       <input type="text" v-model="userName" />
-      <button
-        type="submit"
-        @click.prevent="joinGameRoom"
-        class="enter_button"
-      >
+      <button type="submit" @click.prevent="joinGameRoom" class="enter_button">
         {{ message }}
       </button>
     </form>
@@ -28,17 +24,13 @@ import Admin from "@/components/Home/adminDialog.vue";
 import ChooseRoom from "@/components/Home/intoRoomDialog.vue";
 export default {
   name: "Home",
-  beforeRouteEnter(to, from, next) {
-    // if (from.path !== "/") {
-    //   const Firebase = db.database().ref("/");
-    //   Firebase.set({ nowPlayerAmount: 0 });
-    // }
-    next();
-  },
   mounted() {
-    const Firebase = db.database().ref("/");
-    Firebase.onDisconnect().cancel();
-    this.$store.commit("leaveGameInit");
+    if (this.roomName) {
+      const Firebase = db.database().ref(`/${this.roomName}/`);
+      Firebase.onDisconnect().cancel();
+      Firebase.remove();
+      this.$store.commit("leaveGameInit");
+    }
   },
   data() {
     return {
@@ -54,14 +46,16 @@ export default {
   },
   computed: {
     message() {
-      if (this.nowPlayersAmount == 4) return "滿員中，請耐心等候";
-      else if (this.userName.length > 7) return "請輸入六個字內";
+      if (this.userName.length > 7) return "請輸入六個字內";
       else if (!this.userName.length) return "請至少輸入一個字";
       else return "加入遊戲";
     },
+    roomName() {
+      return this.$store.state.roomName;
+    },
   },
   methods: {
-    joinGameRoom(){
+    joinGameRoom() {
       if (!this.userName.length || this.userName.length > 7) return;
       this.showGameRoomList = true;
     },

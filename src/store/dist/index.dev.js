@@ -32,6 +32,7 @@ var _default = (0, _vuex.createStore)({
     userCalledBinds: [],
     nowPlayingPlayer: '',
     players: [],
+    roomName: '',
     userName: '',
     userIndex: ''
   },
@@ -54,6 +55,9 @@ var _default = (0, _vuex.createStore)({
     }
   },
   mutations: {
+    setRoomName: function setRoomName(state, roomName) {
+      state.roomName = roomName;
+    },
     setUserIndex: function setUserIndex(state, index) {
       state.userIndex = index;
     },

@@ -102,12 +102,13 @@ export default {
       playersInfo.child(`${this.roomPlayerAmount-1}`).set({
         name: this.userName,
         team: `${
-          this.roomPlayerAmount === 1 || this.nowPlayersAmount === 4
+          this.roomPlayerAmount === 1 || this.roomPlayerAmount === 4
             ? "team1"
             : "team2"
         }`,
       });
       this.$store.commit("setUserName", this.userName);
+      this.$store.commit("setRoomName", room);
       this.$store.commit("setUserIndex", this.roomPlayerAmount - 1);
     },
   },
