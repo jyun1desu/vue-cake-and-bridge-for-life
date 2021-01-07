@@ -28,10 +28,13 @@
         @giveUp="giveUpThisRound"
       />
       <ResultBox
-        @restart-game="openNewGame"
-        @pop-waiting="popLoading('waiting');gameResult='激戰中'"
+        @restart-game="resetGame"
+        @pop-waiting="
+          popLoading('waiting');
+          gameResult = '激戰中';
+        "
         @team-mate-change="leadAllPlayersLeave('change mate')"
-        @want-to-leave="showComfirmLeave=true"
+        @want-to-leave="showComfirmLeave = true"
         v-if="gameResult !== '激戰中'"
         :game-result="gameResult"
       />
@@ -242,7 +245,6 @@
       </div>
 
       <div :class="{ show: showSettings }" class="settings">
-        <button class="admin_login">登入管理員</button>
         <button
           @click="
             showComfirmLeave = true;
@@ -320,7 +322,6 @@ export default {
   },
   data() {
     return {
-      dealDone: false,
       leaveTo: null,
       deck: [],
       usersDeck: [],
@@ -413,6 +414,18 @@ export default {
       });
     },
     //
+    resetGame() {
+      //初始化遊戲
+      const nowPlayer = this.nowPlayingPlayer;
+      this.initFireBaseData();
+      this.initGameData();
+      this.$store.commit("restartGameInit");
+      //指定玩家
+      db.database().ref("/nowPlayer/").set(nowPlayer);
+      //重新發牌
+      const deckData = db.database().ref("/deck/");
+      this.setNewDeck();
+    },
     initGameData() {
       this.leaveTo = null;
       this.deck = [];
@@ -431,8 +444,11 @@ export default {
       this.firstLeave = null;
       this.loadingType = null;
     },
-    openNewGame(){
+    giveUpThisRound() {
       this.resetGame();
+      this.popLoading("badluck");
+      const someoneBadLuck = db.database().ref("/someoneBadLuck/");
+      someoneBadLuck.set(true);
     },
     clearCardTable() {
       this.userPlayedCard = "";
@@ -494,24 +510,6 @@ export default {
       } else {
         this.nowPickSuit = pickedCard.suit;
       }
-    },
-    giveUpThisRound() {
-      this.resetGame();
-      this.popLoading("badluck");
-      const someoneBadLuck = db.database().ref("/someoneBadLuck/");
-      someoneBadLuck.set(true);
-    },
-    resetGame() {
-      //初始化遊戲
-      const nowPlayer = this.nowPlayingPlayer;
-      this.initFireBaseData();
-      this.initGameData();
-      this.$store.commit("restartGameInit");
-      //指定玩家
-      db.database().ref("/nowPlayer/").set(nowPlayer);
-      //重新發牌
-      const deckData = db.database().ref("/deck/");
-      this.setNewDeck();
     },
     playTheCard(card) {
       const cardIndex = this.usersDeck.indexOf(card);
@@ -644,16 +642,6 @@ export default {
       });
     },
     listenToGameDataUpdate() {
-      const nowPlayers = db.database().ref("/playersInfo/");
-      nowPlayers.on("value", (data) => {
-        const nowPlayers = data.val();
-        const OKAmount = nowPlayers.filter((player) => player.OKtoPlay === true)
-          .length;
-        if (OKAmount === 4) {
-          this.resetGame();
-        }
-      });
-
       const nowPlayer = db.database().ref("/nowPlayer/");
       nowPlayer.on("value", (data) => {
         this.$store.commit("switchToNextPlayer", data.val());
