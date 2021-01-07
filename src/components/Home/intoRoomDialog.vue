@@ -5,12 +5,12 @@
       <div class="room_choose">
         <div class="block join_exist_room">
           <p class="title">選擇已經存在的房間</p>
-          <p v-if="!roomList.length" class="no_room">目前尚無空房</p>
+          <p v-if="!availibleRooms.length" class="no_room">目前尚無空房</p>
           <div v-if="roomList" class="room_list">
             <button
               @click="chooseARoom(room)"
               :key="room"
-              v-for="room in roomList"
+              v-for="room in availibleRooms"
               class="room"
             >
               {{ room }}
@@ -49,9 +49,11 @@ export default {
   created() {
     const Firebase = db.database().ref("/");
     Firebase.on("value", (data) => {
-      if (data.val()) {
-        const rooms = Object.keys(data.val());
+      const roomsData = data.val();
+      if (roomsData) {
+        const rooms = Object.keys(roomsData);
         this.roomList = rooms;
+        this.allRoomData = roomsData;
       }
     });
   },
@@ -59,7 +61,8 @@ export default {
     return {
       roomList: [],
       roomName: "",
-      roomPlayerAmount:0,
+      roomPlayerAmount: 0,
+      allRoomData: {},
     };
   },
   computed: {
@@ -73,8 +76,23 @@ export default {
         return true;
       }
     },
+    finalRoomName() {
+      return this.$store.state.roomName;
+    },
+    availibleRooms(){
+      return this.roomList.filter(room=>this.isAvailible(room))
+    }
   },
   methods: {
+    isAvailible(room) {
+      const roomData = this.allRoomData[`${room}`];
+      const playerAmount = roomData.nowPlayerAmount;
+      if (playerAmount === 4) {
+        return false;
+      } else {
+        return true;
+      }
+    },
     creatARoom() {
       if (!this.validRoomName) return;
       const Firebase = db.database().ref("/");
@@ -82,24 +100,24 @@ export default {
       this.enterGame(this.roomName);
     },
     chooseARoom(roomName) {
-      this.enterGame(roomName)
+      this.enterGame(roomName);
     },
     enterGame(room) {
       this.setUserData(room);
       this.$router.push({
         name: "WaitingRoom",
-        params: { roomName:room,userName: this.userName },
+        params: { roomName: room, userName: this.userName },
       });
     },
     setUserData(room) {
       const nowPlayerAmountRef = db.database().ref(`/${room}/nowPlayerAmount/`);
       const playersInfo = db.database().ref(`/${room}/playersInfo/`);
-      const nowPlayerAmount = nowPlayerAmountRef.on('value',data=>{
+      nowPlayerAmountRef.on("value", (data) => {
         const amount = data.val();
         this.roomPlayerAmount = amount;
-      })
+      });
       nowPlayerAmountRef.set(this.roomPlayerAmount + 1);
-      playersInfo.child(`${this.roomPlayerAmount-1}`).set({
+      playersInfo.child(`${this.roomPlayerAmount - 1}`).set({
         name: this.userName,
         team: `${
           this.roomPlayerAmount === 1 || this.roomPlayerAmount === 4
@@ -111,6 +129,21 @@ export default {
       this.$store.commit("setRoomName", room);
       this.$store.commit("setUserIndex", this.roomPlayerAmount - 1);
     },
+    removeListeners() {
+      const nowPlayerAmountRef = db
+        .database()
+        .ref(`/${this.finalRoomName}/nowPlayerAmount/`);
+      const playersInfo = db
+        .database()
+        .ref(`/${this.finalRoomName}/playersInfo/`);
+      const Firebase = db.database().ref("/");
+      nowPlayerAmountRef.off();
+      playersInfo.off();
+      Firebase.off();
+    },
+  },
+  unmounted() {
+    this.removeListeners();
   },
 };
 </script>
