@@ -1,0 +1,13 @@
+//斷點
+$phone_horizontal: 576px;
+$pad: 768px;
+$pad_horizontal: 992px;
+$laptop: 1200px;
+
+//-------------
+
+@mixin RWD($device){
+    @media(min-width:$device){
+      @content;
+    }
+}

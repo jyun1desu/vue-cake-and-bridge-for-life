@@ -18,8 +18,8 @@ export default {
   border-radius: 100%;
   background-color: #fff;
   text-align: center;
-  width:250px;
-  height: 250px;
+  width:80vw;
+  height: 80vw;
   padding: 30px;
   box-sizing: border-box;
   display: flex;
