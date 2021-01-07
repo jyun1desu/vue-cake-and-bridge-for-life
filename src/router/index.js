@@ -12,7 +12,7 @@ const routes = [{
     component: Home,
   },
   {
-    path: '/waitingRoom/:userName',
+    path: '/waitingRoom/:roomName/:userName',
     name: 'WaitingRoom',
     component: () => import( /* webpackChunkName: "about" */ '../views/WaitingRoom.vue'),
     beforeEnter(routerTo, from, next) {
@@ -25,7 +25,7 @@ const routes = [{
     },
   },
   {
-    path: '/gameroom/:userName',
+    path: '/gameroom/:roomName/:userName',
     name: 'GameRoom',
     component: () => import( /* webpackChunkName: "about" */ '../views/GameRoom.vue'),
     beforeEnter(routerTo, from, next) {

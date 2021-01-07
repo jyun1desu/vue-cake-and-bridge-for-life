@@ -5,9 +5,14 @@
       <div class="room_choose">
         <div class="block join_exist_room">
           <p class="title">選擇已經存在的房間</p>
-          <p v-if="!room_list.length" class="no_room">目前尚無空房</p>
-          <div v-if="room_list" class="room_list">
-            <button :key="room" v-for="room in room_list" class="room">
+          <p v-if="!roomList.length" class="no_room">目前尚無空房</p>
+          <div v-if="roomList" class="room_list">
+            <button
+              @click="chooseARoom(room)"
+              :key="room"
+              v-for="room in roomList"
+              class="room"
+            >
               {{ room }}
             </button>
           </div>
@@ -17,11 +22,18 @@
           <div class="content">
             <form>
               <input
+                v-model="roomName"
                 type="text"
-                placeholder="請輸入3-7字元"
+                placeholder="請輸入3-8字元"
                 class="room_name"
               />
-              <button class="create_button">建立</button>
+              <button
+                @click.prevent="creatARoom"
+                :class="{ unable: !validRoomName }"
+                class="create_button"
+              >
+                建立
+              </button>
             </form>
           </div>
         </div>
@@ -31,12 +43,73 @@
 </template>
 
 <script>
+import db from "../../db.js";
 export default {
   props: ["userName"],
+  created() {
+    const Firebase = db.database().ref("/");
+    Firebase.on("value", (data) => {
+      if (data.val()) {
+        const rooms = Object.keys(data.val());
+        this.roomList = rooms;
+      }
+    });
+  },
   data() {
     return {
-      room_list: [],
+      roomList: [],
+      roomName: "",
+      roomPlayerAmount:0,
     };
+  },
+  computed: {
+    validRoomName() {
+      const notEnoughLength =
+        this.roomName.length < 3 || this.roomName.length > 8;
+      const duplicate = this.roomList.includes(this.roomName);
+      if (notEnoughLength || duplicate) {
+        return false;
+      } else {
+        return true;
+      }
+    },
+  },
+  methods: {
+    creatARoom() {
+      if (!this.validRoomName) return;
+      const Firebase = db.database().ref("/");
+      Firebase.child(this.roomName).set({ nowPlayerAmount: 0 });
+      this.enterGame(this.roomName);
+    },
+    chooseARoom(roomName) {
+      this.enterGame(roomName)
+    },
+    enterGame(room) {
+      this.setUserData(room);
+      this.$router.push({
+        name: "WaitingRoom",
+        params: { roomName:room,userName: this.userName },
+      });
+    },
+    setUserData(room) {
+      const nowPlayerAmountRef = db.database().ref(`/${room}/nowPlayerAmount/`);
+      const playersInfo = db.database().ref(`/${room}/playersInfo/`);
+      const nowPlayerAmount = nowPlayerAmountRef.on('value',data=>{
+        const amount = data.val();
+        this.roomPlayerAmount = amount;
+      })
+      nowPlayerAmountRef.set(this.roomPlayerAmount + 1);
+      playersInfo.child(`${this.roomPlayerAmount-1}`).set({
+        name: this.userName,
+        team: `${
+          this.roomPlayerAmount === 1 || this.nowPlayersAmount === 4
+            ? "team1"
+            : "team2"
+        }`,
+      });
+      this.$store.commit("setUserName", this.userName);
+      this.$store.commit("setUserIndex", this.roomPlayerAmount - 1);
+    },
   },
 };
 </script>
@@ -130,6 +203,9 @@ $paddingX: 15px;
               @include button_style;
               background-color: $highlight_color;
               letter-spacing: 1px;
+              &.unable {
+                background-color: $unable_color;
+              }
             }
           }
         }

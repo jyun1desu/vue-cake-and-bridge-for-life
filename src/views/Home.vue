@@ -5,20 +5,18 @@
       @close="showAdmin = false"
       v-show="showAdmin"
     />
-    <ChooseRoom :userName="userName" />
+    <ChooseRoom v-if="showGameRoomList" :userName="userName" />
     <Logo @click="showAdmin = true" />
     <form id="name" class="user_input">
       <p>請輸入名字</p>
       <input type="text" v-model="userName" />
       <button
         type="submit"
-        @click.prevent="enterGame"
-        :class="{ novacancy: nowPlayersAmount === 4 }"
+        @click.prevent="joinGameRoom"
         class="enter_button"
       >
         {{ message }}
       </button>
-      <p class="now_players">現在人數:{{ nowPlayersAmount }}人/上限4人</p>
     </form>
   </div>
 </template>
@@ -31,27 +29,22 @@ import ChooseRoom from "@/components/Home/intoRoomDialog.vue";
 export default {
   name: "Home",
   beforeRouteEnter(to, from, next) {
-    if (from.path !== "/") {
-      const Firebase = db.database().ref("/");
-      Firebase.set({ nowPlayerAmount: 0 });
-    }
+    // if (from.path !== "/") {
+    //   const Firebase = db.database().ref("/");
+    //   Firebase.set({ nowPlayerAmount: 0 });
+    // }
     next();
   },
   mounted() {
     const Firebase = db.database().ref("/");
     Firebase.onDisconnect().cancel();
     this.$store.commit("leaveGameInit");
-    const nowPlayerAmount = db.database().ref("nowPlayerAmount");
-    nowPlayerAmount.on("value", (s) => {
-      const data = s.val();
-      this.nowPlayersAmount = data;
-    });
   },
   data() {
     return {
       userName: "",
-      nowPlayersAmount: 0,
       showAdmin: false,
+      showGameRoomList: false,
     };
   },
   components: {
@@ -68,29 +61,9 @@ export default {
     },
   },
   methods: {
-    enterGame() {
-      if (this.nowPlayersAmount === 4) return;
+    joinGameRoom(){
       if (!this.userName.length || this.userName.length > 7) return;
-      this.setUserData();
-      this.$router.push({
-        name: "WaitingRoom",
-        params: { userName: this.userName },
-      });
-    },
-    setUserData() {
-      const nowPlayerAmount = db.database().ref("nowPlayerAmount");
-      const playersInfo = db.database().ref("/playersInfo/");
-      nowPlayerAmount.set(this.nowPlayersAmount + 1);
-      playersInfo.child(`${this.nowPlayersAmount - 1}`).set({
-        name: this.userName,
-        team: `${
-          this.nowPlayersAmount === 1 || this.nowPlayersAmount === 4
-            ? "team1"
-            : "team2"
-        }`,
-      });
-      this.$store.commit("setUserName", this.userName);
-      this.$store.commit("setUserIndex", this.nowPlayersAmount - 1);
+      this.showGameRoomList = true;
     },
     resetGame() {
       const gameData = db.database().ref("/");
