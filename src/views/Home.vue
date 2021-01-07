@@ -1,12 +1,7 @@
 <template>
   <div class="home">
-    <Admin
-      @reset-game="resetGame"
-      @close="showAdmin = false"
-      v-show="showAdmin"
-    />
     <ChooseRoom v-if="showGameRoomList" :userName="userName" />
-    <Logo @click="showAdmin = true" />
+    <Logo />
     <form id="name" class="user_input">
       <p>請輸入名字</p>
       <input type="text" v-model="userName" />
@@ -20,7 +15,6 @@
 <script>
 import db from "../db.js";
 import Logo from "@/components/Home/Logo.vue";
-import Admin from "@/components/Home/adminDialog.vue";
 import ChooseRoom from "@/components/Home/intoRoomDialog.vue";
 export default {
   name: "Home",
@@ -35,14 +29,12 @@ export default {
   data() {
     return {
       userName: "",
-      showAdmin: false,
       showGameRoomList: false,
     };
   },
   components: {
     Logo,
     ChooseRoom,
-    Admin,
   },
   computed: {
     message() {
@@ -58,11 +50,6 @@ export default {
     joinGameRoom() {
       if (!this.userName.length || this.userName.length > 7) return;
       this.showGameRoomList = true;
-    },
-    resetGame() {
-      const gameData = db.database().ref("/");
-      gameData.set({ nowPlayerAmount: 0 });
-      this.showAdmin = false;
     },
   },
 };
