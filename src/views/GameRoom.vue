@@ -394,7 +394,7 @@ export default {
     setNewDeck() {
       const shuffledDeck = this.shuffle(this.buildNewDeck());
       const deal = this.dealCards(4, shuffledDeck);
-      const deckData = db.database().ref("/deck/");
+      const deckData = db.database().ref(`/${this.roomName}/deck/`);
       deckData.on("value", (deck) => {
         if (!deck.val()) {
           deckData.set(deal);
@@ -421,9 +421,9 @@ export default {
       this.initGameData();
       this.$store.commit("restartGameInit");
       //指定玩家
-      db.database().ref("/nowPlayer/").set(nowPlayer);
+      db.database().ref(`/${this.roomName}/nowPlayer/`).set(nowPlayer);
       //重新發牌
-      const deckData = db.database().ref("/deck/");
+      const deckData = db.database().ref(`/${this.roomName}/deck/`);
       this.setNewDeck();
     },
     initGameData() {
@@ -447,15 +447,15 @@ export default {
     giveUpThisRound() {
       this.resetGame();
       this.popLoading("badluck");
-      const someoneBadLuck = db.database().ref("/someoneBadLuck/");
+      const someoneBadLuck = db.database().ref(`/${this.roomName}/someoneBadLuck/`);
       someoneBadLuck.set(true);
     },
     clearCardTable() {
       this.userPlayedCard = "";
       this.thisRoundCard = {};
       this.$store.commit("assignThisRoundSuit", "");
-      const thisRoundCard = db.database().ref("/thisRoundCard/");
-      const thisRoundSuit = db.database().ref("/thisRoundSuit/");
+      const thisRoundCard = db.database().ref(`/${this.roomName}/thisRoundCard/`);
+      const thisRoundSuit = db.database().ref(`/${this.roomName}/thisRoundSuit/`);
       thisRoundCard.set({});
       thisRoundSuit.set("");
     },
@@ -518,16 +518,16 @@ export default {
       if (!this.thisRoundSuit) {
         //如果user是第一個出牌者，出牌花色等於這局指定花色
         this.$store.commit("assignThisRoundSuit", card.suit);
-        const thisRoundSuit = db.database().ref("/thisRoundSuit/");
+        const thisRoundSuit = db.database().ref(`/${this.roomName}/thisRoundSuit/`);
         thisRoundSuit.set(card.suit);
       }
       //轉移給user的下一個玩家
-      const thisRoundCard = db.database().ref("/thisRoundCard/");
+      const thisRoundCard = db.database().ref(`/${this.roomName}/thisRoundCard/`);
       //將user出的牌更新給其他玩家
       thisRoundCard.child(this.userName).set(card);
       thisRoundCard.once("value", (data) => {
         const cardAmount = Object.keys(data.val()).length;
-        const nowPlayer = db.database().ref("/nowPlayer/");
+        const nowPlayer = db.database().ref(`/${this.roomName}/nowPlayer/`);
         if (cardAmount !== 4) {
           this.$store.commit("switchToNextPlayer", this.nextPlayer);
           nowPlayer.set(this.nextPlayer);
@@ -553,7 +553,7 @@ export default {
     },
     leadAllPlayersLeave(type) {
       this.firstLeave = true;
-      const someoneLeave = db.database().ref("/someoneLeave/");
+      const someoneLeave = db.database().ref(`/${this.roomName}/someoneLeave/`);
       switch (type) {
         case "leave":
           someoneLeave.set("leave");
@@ -594,16 +594,16 @@ export default {
     },
     //firebase
     initFireBaseData() {
-      const deck = db.database().ref("/deck/");
-      const nowPlayer = db.database().ref("/nowPlayer/");
+      const deck = db.database().ref(`/${this.roomName}/deck/`);
+      const nowPlayer = db.database().ref(`/${this.roomName}/nowPlayer/`);
       const nowPassedPlayerAmount = db
         .database()
-        .ref("/nowPassedPlayerAmount/");
-      const someoneLeave = db.database().ref("/someoneLeave/");
-      const someoneBadLuck = db.database().ref("/someoneBadLuck/");
-      const thisRoundSuit = db.database().ref("/thisRoundSuit/");
-      const nowCalledBind = db.database().ref("/nowCalledBind/");
-      const userRef = "/playersInfo/" + this.userIndex;
+        .ref(`/${this.roomName}/nowPassedPlayerAmount/`);
+      const someoneLeave = db.database().ref(`/${this.roomName}/someoneLeave/`);
+      const someoneBadLuck = db.database().ref(`/${this.roomName}/someoneBadLuck/`);
+      const thisRoundSuit = db.database().ref(`/${this.roomName}/thisRoundSuit/`);
+      const nowCalledBind = db.database().ref(`/${this.roomName}/nowCalledBind/`);
+      const userRef = `/${this.roomName}/playersInfo/` + this.userIndex;
       const userInfo = db.database().ref(userRef);
       userInfo.update({ OKtoPlay: false, calledBind: [] });
       deck.remove();
@@ -615,9 +615,9 @@ export default {
       someoneBadLuck.remove();
     },
     detectDisConnect() {
-      const Firebase = db.database().ref("/");
+      const Firebase = db.database().ref(`/${this.roomName}/`);
       Firebase.onDisconnect().update({ detectDisConnect: true });
-      const someoneLeave = db.database().ref("/detectDisConnect/");
+      const someoneLeave = db.database().ref(`${this.roomName}/detectDisConnect/`);
       someoneLeave.on("value", (data) => {
         const isAny = data.val();
         if (isAny) {
@@ -626,7 +626,7 @@ export default {
       });
     },
     listenToPlayerLeave() {
-      const someoneLeave = db.database().ref("/someoneLeave/");
+      const someoneLeave = db.database().ref(`/${this.roomName}/someoneLeave/`);
       someoneLeave.on("value", (data) => {
         const type = data.val();
         switch (type) {
@@ -642,16 +642,16 @@ export default {
       });
     },
     listenToGameDataUpdate() {
-      const nowPlayer = db.database().ref("/nowPlayer/");
+      const nowPlayer = db.database().ref(`/${this.roomName}/nowPlayer/`);
       nowPlayer.on("value", (data) => {
         this.$store.commit("switchToNextPlayer", data.val());
       });
-      const thisRoundSuit = db.database().ref("/thisRoundSuit/");
+      const thisRoundSuit = db.database().ref(`/${this.roomName}/thisRoundSuit/`);
       thisRoundSuit.on("value", (data) => {
         const suit = data.val();
         this.$store.commit("assignThisRoundSuit", suit);
       });
-      const thisRoundCard = db.database().ref("/thisRoundCard/");
+      const thisRoundCard = db.database().ref(`/${this.roomName}/thisRoundCard/`);
       thisRoundCard.on("value", (data) => {
         const cards = data.val();
         if (cards) {
@@ -673,7 +673,7 @@ export default {
           }
           //清空牌桌，指定下一個贏家
           this.initRound = setTimeout(() => {
-            const nowPlayer = db.database().ref("/nowPlayer/");
+            const nowPlayer = db.database().ref(`/${this.roomName}/nowPlayer/`);
             nowPlayer.set(wonPlayer);
             this.clearCardTable();
             //贏的隊加一分
@@ -683,7 +683,7 @@ export default {
       });
     },
     listenToRestart() {
-      const someoneBadLuck = db.database().ref("/someoneBadLuck/");
+      const someoneBadLuck = db.database().ref(`/${this.roomName}/someoneBadLuck/`);
       someoneBadLuck.on("value", (data) => {
         const isAny = data.val();
         if (isAny) {
@@ -693,13 +693,13 @@ export default {
       });
     },
     removeListener() {
-      const nowPlayer = db.database().ref("/nowPlayer/");
-      const players = db.database().ref("/playersInfo/");
-      const deck = db.database().ref("/deck/");
-      const thisRoundSuit = db.database().ref("/thisRoundSuit/");
-      const thisRoundCard = db.database().ref("/thisRoundCard/");
-      const someoneLeave = db.database().ref("/someoneLeave/");
-      const someoneBadLuck = db.database().ref("/someoneBadLuck/");
+      const nowPlayer = db.database().ref(`/${this.roomName}/nowPlayer/`);
+      const players = db.database().ref(`/${this.roomName}/playersInfo/`);
+      const deck = db.database().ref(`/${this.roomName}/deck/`);
+      const thisRoundSuit = db.database().ref(`/${this.roomName}/thisRoundSuit/`);
+      const thisRoundCard = db.database().ref(`/${this.roomName}/thisRoundCard/`);
+      const someoneLeave = db.database().ref(`/${this.roomName}/someoneLeave/`);
+      const someoneBadLuck = db.database().ref(`/${this.roomName}/someoneBadLuck/`);
       deck.off();
       players.off();
       nowPlayer.off();
@@ -710,6 +710,9 @@ export default {
     },
   },
   computed: {
+    roomName() {
+      return this.$store.state.roomName;
+    },
     nextPlayer() {
       return this.$store.getters.nextPlayer;
     },
@@ -836,10 +839,10 @@ export default {
   unmounted() {
     this.$store.commit("restartGameInit");
     if (!this.firstLeave) {
-      const gameData = db.database().ref("/");
+      const gameData = db.database().ref(`/${this.roomName}/`);
       switch (this.leaveTo) {
         case "Home":
-          gameData.set({ nowPlayerAmount: 0 });
+          gameData.remove();
           break;
         case "WaitingRoom":
           this.initFireBaseData();

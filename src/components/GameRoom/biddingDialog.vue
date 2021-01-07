@@ -82,9 +82,9 @@ export default {
     this.initBindData();
   },
   mounted() {
-    const nowBind = db.database().ref("/nowCalledBind/");
-    const players = db.database().ref("/playersInfo/");
-    const passedPlayer = db.database().ref("/nowPassedPlayerAmount/");
+    const nowBind = db.database().ref(`/${this.roomName}/nowCalledBind/`);
+    const players = db.database().ref(`/${this.roomName}/playersInfo/`);
+    const passedPlayer = db.database().ref(`/${this.roomName}/nowPassedPlayerAmount/`);
     passedPlayer.set(0);
     nowBind.on("value", (d) => {
       const data = d.val();
@@ -115,9 +115,9 @@ export default {
     });
   },
   unmounted() {
-    const nowBind = db.database().ref("/nowCalledBind/");
-    const players = db.database().ref("/playersInfo/");
-    const passedPlayer = db.database().ref("/nowPassedPlayerAmount/");
+    const nowBind = db.database().ref(`/${this.roomName}/nowCalledBind/`);
+    const players = db.database().ref(`/${this.roomName}/playersInfo/`);
+    const passedPlayer = db.database().ref(`/${this.roomName}/nowPassedPlayerAmount/`);
     nowBind.off();
     players.off();
     passedPlayer.off();
@@ -156,7 +156,7 @@ export default {
       if (this.nowBind.number === 0 && !this.userNowPickedBind) return; //第一位玩家不能pass
       //玩家pass的情況
       if (!this.userNowPickedBind) {
-        const playersInfo = db.database().ref("/playersInfo/");
+        const playersInfo = db.database().ref(`/${this.roomName}/playersInfo/`);
         this.$store.commit("updateUserCalledBinds", "PASS");
         playersInfo
           .child(this.userIndex)
@@ -164,11 +164,11 @@ export default {
           .set(this.userCalledBinds);
         this.userIsPassed = true;
         //現在的PASS玩家若不等於兩人（加上自己則為三人），就傳給下一家
-        const passedPlayer = db.database().ref("/nowPassedPlayerAmount/");
+        const passedPlayer = db.database().ref(`/${this.roomName}/nowPassedPlayerAmount/`);
         passedPlayer.once("value", (d) => {
           const amount = d.val();
           if (this.passedPlayersAmount !== 2) {
-            const database = db.database().ref("/");
+            const database = db.database().ref(`/${this.roomName}/`);
             database.child("nowPlayer").set(this.nextPlayer);
           }
         });
@@ -181,12 +181,12 @@ export default {
           who: this.nowPlayingPlayer,
           numberAndSuit: this.userNowPickedBind,
         };
-        const database = db.database().ref("/");
+        const database = db.database().ref(`/${this.roomName}/`);
         database.child("nowCalledBind").update(data);
         //nowPlayer更新給user的下一家
         database.child("nowPlayer").set(this.nextPlayer);
         //更新上方框框裡的內容(待)
-        const playersInfo = db.database().ref("/playersInfo/");
+        const playersInfo = db.database().ref(`/${this.roomName}/playersInfo/`);
         this.$store.commit("updateUserCalledBinds", this.userNowPickedBind);
         playersInfo
           .child(this.userIndex)
@@ -201,7 +201,7 @@ export default {
       this.$store.commit("decideWinTricks");
       const whoGotBind = this.$store.state.nowBinding.whoCalled;
       const firstPlayer = this.nextPlayerName(whoGotBind);
-      const nowPlayer = db.database().ref("/nowPlayer/");
+      const nowPlayer = db.database().ref(`/${this.roomName}/nowPlayer/`);
       nowPlayer.set(firstPlayer);
     },
     nextPlayerName(nowPlayerName) {
@@ -216,6 +216,9 @@ export default {
     },
   },
   computed: {
+    roomName(){
+      return this.$store.state.roomName;
+    },
     userCalledBinds() {
       return this.$store.state.userCalledBinds;
     },
@@ -268,7 +271,7 @@ export default {
         this.userIsPassed &&
         this.passedPlayersAmount !== 0
       ) {
-        const nowBind = db.database().ref("/");
+        const nowBind = db.database().ref(`/${this.roomName}/`);
         nowBind.child("nowPlayer").set(this.nextPlayer);
       }
     },

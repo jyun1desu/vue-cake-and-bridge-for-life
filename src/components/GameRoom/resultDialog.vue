@@ -26,6 +26,9 @@ import db from "../../db.js";
 export default {
   props: ["game-result"],
   computed: {
+    roomName() {
+      return this.$store.state.roomName;
+    },
     userName() {
       return this.$store.state.userName;
     },
@@ -34,8 +37,8 @@ export default {
     },
   },
   methods: {
-    listenToOtherPlayer(){
-      const players = db.database().ref("/playersInfo/");
+    listenToOtherPlayer() {
+      const players = db.database().ref(`/${this.roomName}/playersInfo/`);
       players.on("value", (data) => {
         const nowPlayers = data.val();
         const OKAmount = nowPlayers.filter((player) => player.OKtoPlay === true)
@@ -47,7 +50,7 @@ export default {
       });
     },
     OKtoNextPlay() {
-      const userRef = "/playersInfo/" + this.userIndex;
+      const userRef = `/${this.roomName}/playersInfo/` + this.userIndex;
       const userInfo = db.database().ref(userRef);
       userInfo.update({ OKtoPlay: true });
     },
