@@ -5,6 +5,7 @@
       @close="showAdmin = false"
       v-show="showAdmin"
     />
+    <ChooseRoom :userName="userName" />
     <Logo @click="showAdmin = true" />
     <form id="name" class="user_input">
       <p>請輸入名字</p>
@@ -26,6 +27,7 @@
 import db from "../db.js";
 import Logo from "@/components/Home/Logo.vue";
 import Admin from "@/components/Home/adminDialog.vue";
+import ChooseRoom from "@/components/Home/intoRoomDialog.vue";
 export default {
   name: "Home",
   beforeRouteEnter(to, from, next) {
@@ -54,6 +56,7 @@ export default {
   },
   components: {
     Logo,
+    ChooseRoom,
     Admin,
   },
   computed: {
@@ -113,7 +116,7 @@ $button-no-vacany: #90bf81;
   align-items: center;
   @include RWD($laptop) {
     width: 50%;
-    margin:0 auto;
+    margin: 0 auto;
   }
   p {
     color: $title_font_color;
@@ -128,25 +131,13 @@ $button-no-vacany: #90bf81;
     }
   }
   input {
-    user-select: auto;
-    -webkit-user-select: auto;
-    width: 50%;
-    display: block;
-    text-align: center;
-    color: $title_font_color;
+    @include input_blank;
+    margin: 0 0 20px 0;
+    border-bottom: 2px solid $title_font_color;
+    padding: 5px;
     font-size: 22px;
     line-height: 25px;
     letter-spacing: 2px;
-    padding: 5px;
-    margin: 0 0 20px 0;
-    background-color: transparent;
-    border: none;
-    border-radius: 0;
-    border-bottom: 2px solid $title_font_color;
-    &:active,
-    &:focus {
-      outline: none;
-    }
   }
   button {
     @include button_style;
