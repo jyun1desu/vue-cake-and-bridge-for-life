@@ -16,7 +16,7 @@ https://jyun1desu.github.io/cake-and-bridge-for-life/#/
 ### 實現功能
 - 可以同時四人連線遊玩，適合在手機上遊玩
 #### 首頁
-* 輸入管理員密碼(jyunyi)可以重設Firebase Data
+* 資料有問題時，點擊logo輸入管理員密碼(jyunyi)可以重設資料
 * 超過四人進入遊戲間時，需等候才能進入
 #### 等待室
 * 可以選擇隊伍
@@ -32,13 +32,13 @@ https://jyun1desu.github.io/cake-and-bridge-for-life/#/
 * 自己贏到的墩可以在左側橘色icon點開查看
 * 自己或其他玩家出牌後，畫面上對應的牌組張數會減少
 * 撲克牌花色在手機上不渲染成emoji
+* 牌局結束後可以選擇再來一局、離開遊戲、更換隊友
+* 斷線或離開時，其他玩家會收到跳轉通知離開遊戲
 ---
 ### 學習記錄
-* 使用firebase達到資料即時更新效果
+* 使用firebase realtime data達到資料即時更新效果
 * vue router 生命週期
 * Fisher-Yates Shuffle
 ---
 ### 待更新功能
-* 重新牌局(再來一局)（目前要大家都出去再重新進入）
-* 更換隊友
----
+* 建立遊戲房間
