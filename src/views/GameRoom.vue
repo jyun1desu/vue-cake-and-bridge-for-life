@@ -28,7 +28,8 @@
         @giveUp="giveUpThisRound"
       />
       <ResultBox
-        @restart-game="popLoading('waiting')"
+        @restart-game="openNewGame"
+        @pop-waiting="popLoading('waiting');gameResult='激戰中'"
         @team-mate-change="leadAllPlayersLeave('change mate')"
         @want-to-leave="showComfirmLeave=true"
         v-if="gameResult !== '激戰中'"
@@ -430,6 +431,9 @@ export default {
       this.firstLeave = null;
       this.loadingType = null;
     },
+    openNewGame(){
+      console.log('hello');
+    },
     clearCardTable() {
       this.userPlayedCard = "";
       this.thisRoundCard = {};
@@ -499,9 +503,12 @@ export default {
     },
     resetGame() {
       //初始化遊戲
+      const nowPlayer = this.nowPlayingPlayer;
       this.initFireBaseData();
       this.initGameData();
       this.$store.commit("restartGameInit");
+      //指定玩家
+      db.database().ref("/nowPlayer/").set(nowPlayer);
       //重新發牌
       const deckData = db.database().ref("/deck/");
       this.setNewDeck();
@@ -699,12 +706,14 @@ export default {
     },
     removeListener() {
       const nowPlayer = db.database().ref("/nowPlayer/");
+      const players = db.database().ref("/playersInfo/");
       const deck = db.database().ref("/deck/");
       const thisRoundSuit = db.database().ref("/thisRoundSuit/");
       const thisRoundCard = db.database().ref("/thisRoundCard/");
       const someoneLeave = db.database().ref("/someoneLeave/");
       const someoneBadLuck = db.database().ref("/someoneBadLuck/");
       deck.off();
+      players.off();
       nowPlayer.off();
       thisRoundSuit.off();
       thisRoundCard.off();

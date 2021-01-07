@@ -134,7 +134,6 @@ var _default = (0, _vuex.createStore)({
       state.thisRoundSuit = '';
       state.wonTricks = [];
       state.userCalledBinds = [];
-      state.nowPlayingPlayer = '';
     },
     leaveGameInit: function leaveGameInit(state) {
       state.players = [];

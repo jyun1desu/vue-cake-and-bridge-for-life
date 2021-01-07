@@ -127,7 +127,6 @@ export default createStore({
       state.thisRoundSuit =  '';
       state.wonTricks =  [];
       state.userCalledBinds = [];
-      state.nowPlayingPlayer =  '';
     },
     leaveGameInit(state){
       state.players =  [];

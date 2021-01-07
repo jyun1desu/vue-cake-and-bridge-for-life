@@ -34,14 +34,27 @@ export default {
     },
   },
   methods: {
+    listenToOtherPlayer(){
+      const players = db.database().ref("/playersInfo/");
+      players.on("value", (data) => {
+        const nowPlayers = data.val();
+        const OKAmount = nowPlayers.filter((player) => player.OKtoPlay === true)
+          .length;
+        //最後一個點擊進入遊戲的玩家為第一輪第一個玩家
+        if (OKAmount === 4) {
+          this.$emit("restart-game");
+        }
+      });
+    },
     OKtoNextPlay() {
       const userRef = "/playersInfo/" + this.userIndex;
       const userInfo = db.database().ref(userRef);
       userInfo.update({ OKtoPlay: true });
     },
     restartGame() {
-      this.$emit("restart-game");
+      this.$emit("pop-waiting");
       this.OKtoNextPlay();
+      this.listenToOtherPlayer();
     },
     leaveGame() {
       this.$emit("want-to-leave");
