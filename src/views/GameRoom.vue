@@ -432,7 +432,7 @@ export default {
       this.loadingType = null;
     },
     openNewGame(){
-      console.log('hello');
+      this.resetGame();
     },
     clearCardTable() {
       this.userPlayedCard = "";
