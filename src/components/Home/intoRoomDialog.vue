@@ -1,6 +1,9 @@
 <template>
   <div class="create_room_page">
     <div class="dialog">
+      <span
+      @click="$emit('close-dialog')"
+      class="cancel">×</span>
       <div class="title">選擇或創建房間</div>
       <div class="room_choose">
         <div class="block join_exist_room">
@@ -165,6 +168,18 @@ $paddingX: 15px;
     border-radius: 10px;
     background-color: #fff;
     overflow: hidden;
+    position: relative;
+    
+    .cancel{
+      font-size: 14px;
+      position: absolute;
+      color: #fff;
+      background-color: $red_suit_color;
+      border-radius: 50%;
+      padding:3px;
+      right:5px;
+      top:5px;
+    }
 
     & > .title {
       padding: 15px $paddingX;

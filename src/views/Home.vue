@@ -1,11 +1,18 @@
 <template>
   <div class="home">
-    <ChooseRoom v-if="showGameRoomList" :userName="userName" />
     <Logo />
+    <ChooseRoom 
+    v-if="showGameRoomList" 
+    :userName="userName"
+    @close-dialog="showGameRoomList=false" />
     <form id="name" class="user_input">
       <p>請輸入名字</p>
       <input type="text" v-model="userName" />
-      <button type="submit" @click.prevent="joinGameRoom" class="enter_button">
+      <button
+        type="submit"
+        @click.prevent="joinGameRoom"
+        class="enter_button"
+      >
         {{ message }}
       </button>
     </form>
