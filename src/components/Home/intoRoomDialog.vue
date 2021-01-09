@@ -90,7 +90,8 @@ export default {
     isAvailible(room) {
       const roomData = this.allRoomData[`${room}`];
       const playerAmount = roomData.nowPlayerAmount;
-      if (playerAmount === 4) {
+      const detectDisConnect = roomData.detectDisConnect;
+      if (playerAmount === 4||detectDisConnect) {
         return false;
       } else {
         return true;
