@@ -501,13 +501,17 @@ export default {
       return cards[winnerIndex];
     },
     pickACard(pickedCard) {
+      //還沒輪到你！
       if (this.nowPlayingPlayer !== this.userName) return;
+      //有那個花色就要出！
       const haveTheSuit = this.hasRoundSuitCard(this.usersDeck);
       if (haveTheSuit && pickedCard.suit !== this.thisRoundSuit) return;
+      //第二次點擊，就是你了～
       if (this.nowPickSuit === pickedCard.suit) {
         this.playTheCard(pickedCard);
         this.nowPickSuit = null;
       } else {
+        //第一次點擊，先讓選擇的牌的同花色牌都一起放大
         this.nowPickSuit = pickedCard.suit;
       }
     },
@@ -521,17 +525,19 @@ export default {
         const thisRoundSuit = db.database().ref(`/${this.roomName}/thisRoundSuit/`);
         thisRoundSuit.set(card.suit);
       }
-      //轉移給user的下一個玩家
+       //將user出的牌更新給其他玩家
       const thisRoundCard = db.database().ref(`/${this.roomName}/thisRoundCard/`);
-      //將user出的牌更新給其他玩家
       thisRoundCard.child(this.userName).set(card);
+      //出完牌後要換下一個玩家嗎？
       thisRoundCard.once("value", (data) => {
         const cardAmount = Object.keys(data.val()).length;
         const nowPlayer = db.database().ref(`/${this.roomName}/nowPlayer/`);
+        //這輪還沒結束，換下一個玩家
         if (cardAmount !== 4) {
           this.$store.commit("switchToNextPlayer", this.nextPlayer);
           nowPlayer.set(this.nextPlayer);
         } else {
+          //結束了，下一個玩家設為空值
           this.$store.commit("switchToNextPlayer", "");
           nowPlayer.set("");
         }
@@ -615,8 +621,10 @@ export default {
       someoneBadLuck.remove();
     },
     detectDisConnect() {
+      //自己斷線時
       const Firebase = db.database().ref(`/${this.roomName}/`);
       Firebase.onDisconnect().update({ detectDisConnect: true });
+      //偵測到別人斷線時
       const someoneLeave = db.database().ref(`${this.roomName}/detectDisConnect/`);
       someoneLeave.on("value", (data) => {
         const isAny = data.val();
