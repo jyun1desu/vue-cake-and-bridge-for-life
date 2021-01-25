@@ -91,11 +91,8 @@ export default {
       const roomData = this.allRoomData[`${room}`];
       const playerAmount = roomData.nowPlayerAmount;
       const detectDisConnect = roomData.detectDisConnect;
-      if (playerAmount === 4||detectDisConnect) {
-        return false;
-      } else {
-        return true;
-      }
+      const availible = !(playerAmount === 4||detectDisConnect)
+      return availible
     },
     creatARoom() {
       if (!this.validRoomName) return;

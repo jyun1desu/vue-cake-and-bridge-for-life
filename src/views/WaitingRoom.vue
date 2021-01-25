@@ -10,7 +10,7 @@
         <div
           :class="{
             canele_team: team[0] === 'team2',
-            default_strawberry_team: !team[0] || team[0] === 'team1',
+            strawberry_team: !team[0] || team[0] === 'team1',
           }"
           class="player player__first"
         >
@@ -19,7 +19,7 @@
         <div
           :class="{
             canele_team: !team[1] || team[1] === 'team2',
-            default_strawberry_team: team[1] === 'team1',
+            strawberry_team: team[1] === 'team1',
           }"
           class="player player__second"
         >
@@ -28,7 +28,7 @@
         <div
           :class="{
             canele_team: !team[2] || team[2] === 'team2',
-            default_strawberry_team: team[2] === 'team1',
+            strawberry_team: team[2] === 'team1',
           }"
           class="player player__third"
         >
@@ -37,7 +37,7 @@
         <div
           :class="{
             canele_team: team[3] === 'team2',
-            default_strawberry_team: !team[3] || team[3] === 'team1',
+            strawberry_team: !team[3] || team[3] === 'team1',
           }"
           class="player player__fourth"
         >
@@ -245,7 +245,7 @@ export default {
     align-items: flex-end;
     transition: all 0.2s;
 
-    &.default_strawberry_team {
+    &.strawberry_team {
       background-color: rgb(241, 224, 224);
     }
     &.canele_team {
