@@ -7,8 +7,8 @@
       <Card 
       class="card"
       :card="card"
-      :key="'card'+i"
-      v-for="(card,i) in deck"/>
+      :key="card.suit + card.number"
+      v-for="card in deck"/>
     </div>
   </div>
 </template>

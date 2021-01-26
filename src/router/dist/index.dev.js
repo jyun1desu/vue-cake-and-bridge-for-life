@@ -39,7 +39,6 @@ var routes = [{
         name: "Home"
       });
     }
-
     next();
   }
 }, {
