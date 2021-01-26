@@ -179,6 +179,7 @@ $paddingX: 15px;
     .cancel {
       font-size: 14px;
       position: absolute;
+      cursor: pointer;
       color: #fff;
       background-color: $red_suit_color;
       border-radius: 50%;
