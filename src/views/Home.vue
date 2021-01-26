@@ -39,7 +39,7 @@ export default {
   },
   computed: {
     message() {
-      if (this.userName.length > 7) return "請輸入六個字内";
+      if (this.userName.length > 6) return "請輸入六個字内";
       else if (!this.userName.length) return "請至少輸入一個字";
       else return "加入遊戲";
     },
