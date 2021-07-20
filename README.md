@@ -1,6 +1,6 @@
 # cake-and-bridge-for-life
 ### demo
-https://jyun1desu.github.io/cake-and-bridge-for-life/#/
+https://jyun1desu.github.io/vue-cake-and-bridge-for-life/#/
 
 ![demo圖](https://imgur.com/7dqT6pZ.jpg)
 
